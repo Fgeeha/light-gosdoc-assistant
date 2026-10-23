@@ -152,6 +152,7 @@ def test_docx_strips_control_chars():
 
 def test_parse_json_object_tolerates_trailing_text():
     assert llm.parse_json_object('```json\n{"rows": []}\n```\nПояснение: {x}') == {"rows": []}
+    assert llm.parse_json_object('Ответ: [{"a": 1}]') == {"rows": [{"a": 1}]}
 
 
 def test_parse_table_detects_delimiters():

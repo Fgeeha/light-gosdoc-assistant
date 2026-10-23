@@ -206,8 +206,8 @@ def summary(results: list[dict]) -> str:
     for r in sorted(results, key=lambda r: -r["overall"]):
         lines.append(
             f"| {r['model']} | **{r['overall']:.0%}** | {r['check']:.0%} | {r['letter']:.0%} | "
-            f"{r['table']:.0%} | {r['check_seconds']} | {r['letter_seconds']} | "
-            f"{r['table_seconds']} | {r['chars_per_second']} |"
+            f"{r['table']:.0%} | {r['check_seconds']:.1f} | {r['letter_seconds']:.1f} | "
+            f"{r['table_seconds']:.1f} | {r['chars_per_second']:.0f} |"
         )
     return "\n".join(lines)
 

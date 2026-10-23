@@ -103,14 +103,16 @@ async def complete_json(messages: list[dict], model: str | None = None) -> dict:
 
 def parse_json_object(text: str) -> dict:
     text = re.sub(r"^```(?:json)?|```$", "", text.strip(), flags=re.M).strip()
-    start = text.find("{")
+    start = min((i for i in (text.find("{"), text.find("[")) if i >= 0), default=-1)
     if start < 0:
         raise LLMError("Модель не вернула JSON")
     try:
         # raw_decode: модели иногда дописывают пояснения после объекта.
-        return json.JSONDecoder().raw_decode(text, start)[0]
+        data = json.JSONDecoder().raw_decode(text, start)[0]
     except json.JSONDecodeError as e:
         raise LLMError(f"Модель вернула некорректный JSON: {e.msg}") from e
+    # Часть моделей отвечает голым массивом вместо {"rows": [...]}.
+    return {"rows": data} if isinstance(data, list) else data
 
 
 async def list_models() -> list[str]:

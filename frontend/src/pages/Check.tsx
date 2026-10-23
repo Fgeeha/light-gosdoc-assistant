@@ -100,6 +100,8 @@ export default function Check() {
   const reference = sample && checked === sample.text ? sample.expected : null;
   const views = VIEWS.filter((v) => v.id !== "reference" || reference);
   const view = views.some((v) => v.id === selectedView) ? selectedView : "redline";
+  // Копируется и скачивается то, что сейчас на экране.
+  const shown = view === "reference" && reference ? reference : corrected;
 
   const issues = findings?.filter((f) => f.status !== "active") ?? [];
   const actual = findings?.filter((f) => f.status === "active") ?? [];
@@ -192,8 +194,8 @@ export default function Check() {
                     </div>
                     {!running && corrected && (
                       <div className="flex gap-1">
-                        <CopyButton text={corrected} />
-                        <Button variant="quiet" onClick={() => downloadDocx(corrected, "Актуализированный документ")}>
+                        <CopyButton text={shown} />
+                        <Button variant="quiet" onClick={() => downloadDocx(shown, view === "reference" ? "Эталонная редакция" : "Актуализированный документ")}>
                           Скачать .docx
                         </Button>
                       </div>

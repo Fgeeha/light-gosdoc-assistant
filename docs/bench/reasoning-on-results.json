@@ -1,0 +1,312 @@
+{
+ "info": "Коммит: a543998; LLM_EXTRA_BODY: {}; прогонов на модель: 3; дата: 23.10.2026 23:17",
+ "results": [
+  {
+   "model": "qwen3:14b",
+   "runs": 3,
+   "check": 1.0,
+   "letter": 1.0,
+   "table": 0.991,
+   "overall": 0.997,
+   "check_seconds": 16.333,
+   "letter_seconds": 12.467,
+   "table_seconds": 17.367,
+   "chars_per_second": 78.0,
+   "vram_gb": 9.0,
+   "details": [
+    {
+     "model": "qwen3:14b",
+     "cases": [
+      {
+       "kind": "check",
+       "id": "appeals-regulation",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 9.68,
+       "seconds": 15.8,
+       "chars": 1363
+      },
+      {
+       "kind": "check",
+       "id": "pd-protection",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 9.24,
+       "seconds": 16.1,
+       "chars": 1377
+      },
+      {
+       "kind": "check",
+       "id": "procurement-tz",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 19.94,
+       "seconds": 26.5,
+       "chars": 1362
+      },
+      {
+       "kind": "letter",
+       "id": "road-repair",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 7.58,
+       "seconds": 11.5,
+       "chars": 801
+      },
+      {
+       "kind": "letter",
+       "id": "info-request",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 5.93,
+       "seconds": 11.7,
+       "chars": 1277
+      },
+      {
+       "kind": "letter",
+       "id": "archive-certificate",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 8.86,
+       "seconds": 12.7,
+       "chars": 839
+      },
+      {
+       "kind": "table",
+       "id": "appeals-registry",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0,
+       "seconds": 19.3,
+       "chars": 844
+      },
+      {
+       "kind": "table",
+       "id": "payroll-report",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0,
+       "seconds": 16.6,
+       "chars": 592
+      },
+      {
+       "kind": "table",
+       "id": "addresses",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0,
+       "seconds": 14.0,
+       "chars": 557
+      }
+     ],
+     "load_seconds": 11.5,
+     "vram_gb": 9.0,
+     "check": 1.0,
+     "check_seconds": 19.5,
+     "letter": 1.0,
+     "letter_seconds": 12.0,
+     "table": 1.0,
+     "table_seconds": 16.6,
+     "overall": 1.0,
+     "chars_per_second": 74
+    },
+    {
+     "model": "qwen3:14b",
+     "cases": [
+      {
+       "kind": "check",
+       "id": "appeals-regulation",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 8.9,
+       "seconds": 14.8,
+       "chars": 1384
+      },
+      {
+       "kind": "check",
+       "id": "pd-protection",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 9.49,
+       "seconds": 15.7,
+       "chars": 1299
+      },
+      {
+       "kind": "check",
+       "id": "procurement-tz",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 7.97,
+       "seconds": 14.1,
+       "chars": 1319
+      },
+      {
+       "kind": "letter",
+       "id": "road-repair",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 8.73,
+       "seconds": 13.0,
+       "chars": 1022
+      },
+      {
+       "kind": "letter",
+       "id": "info-request",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 8.08,
+       "seconds": 13.9,
+       "chars": 1267
+      },
+      {
+       "kind": "letter",
+       "id": "archive-certificate",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 8.69,
+       "seconds": 12.4,
+       "chars": 735
+      },
+      {
+       "kind": "table",
+       "id": "appeals-registry",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0,
+       "seconds": 17.0,
+       "chars": 844
+      },
+      {
+       "kind": "table",
+       "id": "payroll-report",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0,
+       "seconds": 18.0,
+       "chars": 592
+      },
+      {
+       "kind": "table",
+       "id": "addresses",
+       "score": 0.952,
+       "fails": [
+        "стр. 3 «Улица»: «проспект Победы» вместо «пр-кт Победы»"
+       ],
+       "ttft": 0,
+       "seconds": 12.4,
+       "chars": 560
+      }
+     ],
+     "load_seconds": 1.9,
+     "vram_gb": 9.0,
+     "check": 1.0,
+     "check_seconds": 14.9,
+     "letter": 1.0,
+     "letter_seconds": 13.1,
+     "table": 0.984,
+     "table_seconds": 15.8,
+     "overall": 0.995,
+     "chars_per_second": 84
+    },
+    {
+     "model": "qwen3:14b",
+     "cases": [
+      {
+       "kind": "check",
+       "id": "appeals-regulation",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 8.95,
+       "seconds": 14.9,
+       "chars": 1363
+      },
+      {
+       "kind": "check",
+       "id": "pd-protection",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 9.35,
+       "seconds": 15.6,
+       "chars": 1275
+      },
+      {
+       "kind": "check",
+       "id": "procurement-tz",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 7.38,
+       "seconds": 13.4,
+       "chars": 1319
+      },
+      {
+       "kind": "letter",
+       "id": "road-repair",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 8.88,
+       "seconds": 12.0,
+       "chars": 680
+      },
+      {
+       "kind": "letter",
+       "id": "info-request",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 8.71,
+       "seconds": 12.7,
+       "chars": 812
+      },
+      {
+       "kind": "letter",
+       "id": "archive-certificate",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 8.74,
+       "seconds": 12.2,
+       "chars": 725
+      },
+      {
+       "kind": "table",
+       "id": "appeals-registry",
+       "score": 0.967,
+       "fails": [
+        "стр. 5 «Вид обращения»: «Заявление» вместо «Жалоба»"
+       ],
+       "ttft": 0,
+       "seconds": 25.9,
+       "chars": 847
+      },
+      {
+       "kind": "table",
+       "id": "payroll-report",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0,
+       "seconds": 18.7,
+       "chars": 592
+      },
+      {
+       "kind": "table",
+       "id": "addresses",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0,
+       "seconds": 14.6,
+       "chars": 557
+      }
+     ],
+     "load_seconds": 2.6,
+     "vram_gb": 9.0,
+     "check": 1.0,
+     "check_seconds": 14.6,
+     "letter": 1.0,
+     "letter_seconds": 12.3,
+     "table": 0.989,
+     "table_seconds": 19.7,
+     "overall": 0.996,
+     "chars_per_second": 76
+    }
+   ]
+  }
+ ]
+}

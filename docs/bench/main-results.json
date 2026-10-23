@@ -1,0 +1,2473 @@
+{
+ "info": "Коммит: a543998; LLM_EXTRA_BODY: {\"reasoning_effort\": \"none\"}; прогонов на модель: 3; дата: 23.10.2026 23:10",
+ "results": [
+  {
+   "model": "qwen3:14b",
+   "runs": 3,
+   "check": 0.991,
+   "letter": 0.989,
+   "table": 0.982,
+   "overall": 0.987,
+   "check_seconds": 6.433,
+   "letter_seconds": 4.9,
+   "table_seconds": 4.867,
+   "chars_per_second": 207.0,
+   "vram_gb": 9.0,
+   "details": [
+    {
+     "model": "qwen3:14b",
+     "cases": [
+      {
+       "kind": "check",
+       "id": "appeals-regulation",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.52,
+       "seconds": 6.4,
+       "chars": 1371
+      },
+      {
+       "kind": "check",
+       "id": "pd-protection",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.55,
+       "seconds": 6.8,
+       "chars": 1257
+      },
+      {
+       "kind": "check",
+       "id": "procurement-tz",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.71,
+       "seconds": 6.8,
+       "chars": 1289
+      },
+      {
+       "kind": "letter",
+       "id": "road-repair",
+       "score": 0.9,
+       "fails": [
+        "нет /водоотвод/"
+       ],
+       "ttft": 0.58,
+       "seconds": 4.9,
+       "chars": 995
+      },
+      {
+       "kind": "letter",
+       "id": "info-request",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.24,
+       "seconds": 5.9,
+       "chars": 1255
+      },
+      {
+       "kind": "letter",
+       "id": "archive-certificate",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.32,
+       "seconds": 3.5,
+       "chars": 707
+      },
+      {
+       "kind": "table",
+       "id": "appeals-registry",
+       "score": 0.967,
+       "fails": [
+        "стр. 5 «Вид обращения»: «Заявление» вместо «Жалоба»"
+       ],
+       "ttft": 0,
+       "seconds": 6.5,
+       "chars": 847
+      },
+      {
+       "kind": "table",
+       "id": "payroll-report",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0,
+       "seconds": 4.3,
+       "chars": 592
+      },
+      {
+       "kind": "table",
+       "id": "addresses",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0,
+       "seconds": 4.4,
+       "chars": 557
+      }
+     ],
+     "load_seconds": 3.4,
+     "vram_gb": 9.0,
+     "check": 1.0,
+     "check_seconds": 6.7,
+     "letter": 0.967,
+     "letter_seconds": 4.8,
+     "table": 0.989,
+     "table_seconds": 5.1,
+     "overall": 0.985,
+     "chars_per_second": 200
+    },
+    {
+     "model": "qwen3:14b",
+     "cases": [
+      {
+       "kind": "check",
+       "id": "appeals-regulation",
+       "score": 0.917,
+       "fails": [
+        "не применена норма /30 дней/"
+       ],
+       "ttft": 0.18,
+       "seconds": 6.3,
+       "chars": 1369
+      },
+      {
+       "kind": "check",
+       "id": "pd-protection",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.29,
+       "seconds": 6.6,
+       "chars": 1279
+      },
+      {
+       "kind": "check",
+       "id": "procurement-tz",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.27,
+       "seconds": 6.1,
+       "chars": 1289
+      },
+      {
+       "kind": "letter",
+       "id": "road-repair",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.36,
+       "seconds": 4.7,
+       "chars": 1010
+      },
+      {
+       "kind": "letter",
+       "id": "info-request",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.23,
+       "seconds": 5.9,
+       "chars": 1254
+      },
+      {
+       "kind": "letter",
+       "id": "archive-certificate",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.25,
+       "seconds": 4.1,
+       "chars": 843
+      },
+      {
+       "kind": "table",
+       "id": "appeals-registry",
+       "score": 0.967,
+       "fails": [
+        "стр. 5 «Вид обращения»: «Заявление» вместо «Жалоба»"
+       ],
+       "ttft": 0,
+       "seconds": 6.0,
+       "chars": 847
+      },
+      {
+       "kind": "table",
+       "id": "payroll-report",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0,
+       "seconds": 3.9,
+       "chars": 592
+      },
+      {
+       "kind": "table",
+       "id": "addresses",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0,
+       "seconds": 4.2,
+       "chars": 557
+      }
+     ],
+     "load_seconds": 0.3,
+     "vram_gb": 9.0,
+     "check": 0.972,
+     "check_seconds": 6.3,
+     "letter": 1.0,
+     "letter_seconds": 4.9,
+     "table": 0.989,
+     "table_seconds": 4.7,
+     "overall": 0.987,
+     "chars_per_second": 209
+    },
+    {
+     "model": "qwen3:14b",
+     "cases": [
+      {
+       "kind": "check",
+       "id": "appeals-regulation",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.18,
+       "seconds": 6.0,
+       "chars": 1357
+      },
+      {
+       "kind": "check",
+       "id": "pd-protection",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.29,
+       "seconds": 6.7,
+       "chars": 1349
+      },
+      {
+       "kind": "check",
+       "id": "procurement-tz",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.28,
+       "seconds": 6.1,
+       "chars": 1289
+      },
+      {
+       "kind": "letter",
+       "id": "road-repair",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.37,
+       "seconds": 5.5,
+       "chars": 1175
+      },
+      {
+       "kind": "letter",
+       "id": "info-request",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.34,
+       "seconds": 6.0,
+       "chars": 1297
+      },
+      {
+       "kind": "letter",
+       "id": "archive-certificate",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.26,
+       "seconds": 3.6,
+       "chars": 708
+      },
+      {
+       "kind": "table",
+       "id": "appeals-registry",
+       "score": 0.967,
+       "fails": [
+        "стр. 5 «Вид обращения»: «Заявление» вместо «Жалоба»"
+       ],
+       "ttft": 0,
+       "seconds": 6.1,
+       "chars": 847
+      },
+      {
+       "kind": "table",
+       "id": "payroll-report",
+       "score": 0.938,
+       "fails": [
+        "стр. 3 «Итого начислено, руб.»: «91400» вместо «101400»"
+       ],
+       "ttft": 0,
+       "seconds": 3.9,
+       "chars": 591
+      },
+      {
+       "kind": "table",
+       "id": "addresses",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0,
+       "seconds": 4.4,
+       "chars": 557
+      }
+     ],
+     "load_seconds": 0.3,
+     "vram_gb": 9.0,
+     "check": 1.0,
+     "check_seconds": 6.3,
+     "letter": 1.0,
+     "letter_seconds": 5.0,
+     "table": 0.968,
+     "table_seconds": 4.8,
+     "overall": 0.989,
+     "chars_per_second": 212
+    }
+   ]
+  },
+  {
+   "model": "qwen3:8b",
+   "runs": 3,
+   "check": 1.0,
+   "letter": 0.967,
+   "table": 0.946,
+   "overall": 0.971,
+   "check_seconds": 3.9,
+   "letter_seconds": 3.233,
+   "table_seconds": 2.867,
+   "chars_per_second": 355.667,
+   "vram_gb": 5.2,
+   "details": [
+    {
+     "model": "qwen3:8b",
+     "cases": [
+      {
+       "kind": "check",
+       "id": "appeals-regulation",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.35,
+       "seconds": 3.7,
+       "chars": 1357
+      },
+      {
+       "kind": "check",
+       "id": "pd-protection",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.46,
+       "seconds": 4.4,
+       "chars": 1412
+      },
+      {
+       "kind": "check",
+       "id": "procurement-tz",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.43,
+       "seconds": 3.9,
+       "chars": 1289
+      },
+      {
+       "kind": "letter",
+       "id": "road-repair",
+       "score": 0.9,
+       "fails": [
+        "нет /водоотвод/"
+       ],
+       "ttft": 0.4,
+       "seconds": 2.8,
+       "chars": 856
+      },
+      {
+       "kind": "letter",
+       "id": "info-request",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.18,
+       "seconds": 3.6,
+       "chars": 1466
+      },
+      {
+       "kind": "letter",
+       "id": "archive-certificate",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.26,
+       "seconds": 2.5,
+       "chars": 842
+      },
+      {
+       "kind": "table",
+       "id": "appeals-registry",
+       "score": 0.933,
+       "fails": [
+        "стр. 1 «Вид обращения»: «Жалоба» вместо «Заявление»",
+        "стр. 3 «Дата обращения»: «15.03.26» вместо «15.03.2026»"
+       ],
+       "ttft": 0,
+       "seconds": 3.7,
+       "chars": 839
+      },
+      {
+       "kind": "table",
+       "id": "payroll-report",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0,
+       "seconds": 2.4,
+       "chars": 592
+      },
+      {
+       "kind": "table",
+       "id": "addresses",
+       "score": 0.905,
+       "fails": [
+        "стр. 2 «Дом»: «46 кв. 2» вместо «46»",
+        "стр. 3 «Помещение»: «квартира 15» вместо «кв. 15»"
+       ],
+       "ttft": 0,
+       "seconds": 2.7,
+       "chars": 568
+      }
+     ],
+     "load_seconds": 3.7,
+     "vram_gb": 5.2,
+     "check": 1.0,
+     "check_seconds": 4.0,
+     "letter": 0.967,
+     "letter_seconds": 3.0,
+     "table": 0.946,
+     "table_seconds": 2.9,
+     "overall": 0.971,
+     "chars_per_second": 346
+    },
+    {
+     "model": "qwen3:8b",
+     "cases": [
+      {
+       "kind": "check",
+       "id": "appeals-regulation",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.16,
+       "seconds": 3.5,
+       "chars": 1357
+      },
+      {
+       "kind": "check",
+       "id": "pd-protection",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.26,
+       "seconds": 4.2,
+       "chars": 1412
+      },
+      {
+       "kind": "check",
+       "id": "procurement-tz",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.26,
+       "seconds": 3.8,
+       "chars": 1289
+      },
+      {
+       "kind": "letter",
+       "id": "road-repair",
+       "score": 0.9,
+       "fails": [
+        "нет /водоотвод/"
+       ],
+       "ttft": 0.32,
+       "seconds": 3.4,
+       "chars": 1243
+      },
+      {
+       "kind": "letter",
+       "id": "info-request",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.26,
+       "seconds": 3.0,
+       "chars": 1093
+      },
+      {
+       "kind": "letter",
+       "id": "archive-certificate",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.18,
+       "seconds": 2.8,
+       "chars": 1052
+      },
+      {
+       "kind": "table",
+       "id": "appeals-registry",
+       "score": 0.933,
+       "fails": [
+        "стр. 1 «Вид обращения»: «Жалоба» вместо «Заявление»",
+        "стр. 3 «Дата обращения»: «15.03.26» вместо «15.03.2026»"
+       ],
+       "ttft": 0,
+       "seconds": 3.5,
+       "chars": 839
+      },
+      {
+       "kind": "table",
+       "id": "payroll-report",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0,
+       "seconds": 2.5,
+       "chars": 592
+      },
+      {
+       "kind": "table",
+       "id": "addresses",
+       "score": 0.905,
+       "fails": [
+        "стр. 2 «Дом»: «46 кв. 2» вместо «46»",
+        "стр. 3 «Помещение»: «квартира 15» вместо «кв. 15»"
+       ],
+       "ttft": 0,
+       "seconds": 2.5,
+       "chars": 568
+      }
+     ],
+     "load_seconds": 0.2,
+     "vram_gb": 5.2,
+     "check": 1.0,
+     "check_seconds": 3.8,
+     "letter": 0.967,
+     "letter_seconds": 3.1,
+     "table": 0.946,
+     "table_seconds": 2.8,
+     "overall": 0.971,
+     "chars_per_second": 360
+    },
+    {
+     "model": "qwen3:8b",
+     "cases": [
+      {
+       "kind": "check",
+       "id": "appeals-regulation",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.17,
+       "seconds": 3.6,
+       "chars": 1357
+      },
+      {
+       "kind": "check",
+       "id": "pd-protection",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.26,
+       "seconds": 4.2,
+       "chars": 1383
+      },
+      {
+       "kind": "check",
+       "id": "procurement-tz",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.26,
+       "seconds": 3.8,
+       "chars": 1289
+      },
+      {
+       "kind": "letter",
+       "id": "road-repair",
+       "score": 0.9,
+       "fails": [
+        "нет /водоотвод/"
+       ],
+       "ttft": 0.26,
+       "seconds": 3.1,
+       "chars": 1134
+      },
+      {
+       "kind": "letter",
+       "id": "info-request",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.26,
+       "seconds": 4.1,
+       "chars": 1488
+      },
+      {
+       "kind": "letter",
+       "id": "archive-certificate",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.23,
+       "seconds": 3.7,
+       "chars": 1475
+      },
+      {
+       "kind": "table",
+       "id": "appeals-registry",
+       "score": 0.933,
+       "fails": [
+        "стр. 1 «Вид обращения»: «Жалоба» вместо «Заявление»",
+        "стр. 3 «Дата обращения»: «15.03.26» вместо «15.03.2026»"
+       ],
+       "ttft": 0,
+       "seconds": 3.6,
+       "chars": 839
+      },
+      {
+       "kind": "table",
+       "id": "payroll-report",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0,
+       "seconds": 2.4,
+       "chars": 592
+      },
+      {
+       "kind": "table",
+       "id": "addresses",
+       "score": 0.905,
+       "fails": [
+        "стр. 2 «Дом»: «46 кв 2» вместо «46»",
+        "стр. 3 «Помещение»: «квартира 15» вместо «кв. 15»"
+       ],
+       "ttft": 0,
+       "seconds": 2.6,
+       "chars": 567
+      }
+     ],
+     "load_seconds": 0.2,
+     "vram_gb": 5.2,
+     "check": 1.0,
+     "check_seconds": 3.9,
+     "letter": 0.967,
+     "letter_seconds": 3.6,
+     "table": 0.946,
+     "table_seconds": 2.9,
+     "overall": 0.971,
+     "chars_per_second": 361
+    }
+   ]
+  },
+  {
+   "model": "gemma3:12b",
+   "runs": 3,
+   "check": 1.0,
+   "letter": 1.0,
+   "table": 0.925,
+   "overall": 0.975,
+   "check_seconds": 5.4,
+   "letter_seconds": 4.4,
+   "table_seconds": 4.9,
+   "chars_per_second": 252.333,
+   "vram_gb": 7.5,
+   "details": [
+    {
+     "model": "gemma3:12b",
+     "cases": [
+      {
+       "kind": "check",
+       "id": "appeals-regulation",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.67,
+       "seconds": 5.2,
+       "chars": 1379
+      },
+      {
+       "kind": "check",
+       "id": "pd-protection",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.92,
+       "seconds": 5.7,
+       "chars": 1306
+      },
+      {
+       "kind": "check",
+       "id": "procurement-tz",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.93,
+       "seconds": 5.4,
+       "chars": 1270
+      },
+      {
+       "kind": "letter",
+       "id": "road-repair",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.82,
+       "seconds": 4.6,
+       "chars": 1214
+      },
+      {
+       "kind": "letter",
+       "id": "info-request",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.48,
+       "seconds": 4.8,
+       "chars": 1364
+      },
+      {
+       "kind": "letter",
+       "id": "archive-certificate",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.64,
+       "seconds": 4.3,
+       "chars": 1029
+      },
+      {
+       "kind": "table",
+       "id": "appeals-registry",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0,
+       "seconds": 6.3,
+       "chars": 844
+      },
+      {
+       "kind": "table",
+       "id": "payroll-report",
+       "score": 0.875,
+       "fails": [
+        "стр. 2 «Итого начислено, руб.»: «60800» вместо «59800»",
+        "стр. 3 «Итого начислено, руб.»: «102600» вместо «101400»"
+       ],
+       "ttft": 0,
+       "seconds": 4.1,
+       "chars": 592
+      },
+      {
+       "kind": "table",
+       "id": "addresses",
+       "score": 0.857,
+       "fails": [
+        "стр. 2 «Улица»: «ул Склизкова» вместо «ул. Склизкова»",
+        "стр. 3 «Улица»: «проспект Победы» вместо «пр-кт Победы»",
+        "стр. 3 «Помещение»: «» вместо «кв. 15»"
+       ],
+       "ttft": 0,
+       "seconds": 4.2,
+       "chars": 553
+      }
+     ],
+     "load_seconds": 4.4,
+     "vram_gb": 7.5,
+     "check": 1.0,
+     "check_seconds": 5.4,
+     "letter": 1.0,
+     "letter_seconds": 4.6,
+     "table": 0.911,
+     "table_seconds": 4.9,
+     "overall": 0.97,
+     "chars_per_second": 252
+    },
+    {
+     "model": "gemma3:12b",
+     "cases": [
+      {
+       "kind": "check",
+       "id": "appeals-regulation",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.52,
+       "seconds": 5.1,
+       "chars": 1372
+      },
+      {
+       "kind": "check",
+       "id": "pd-protection",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.76,
+       "seconds": 5.6,
+       "chars": 1315
+      },
+      {
+       "kind": "check",
+       "id": "procurement-tz",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.75,
+       "seconds": 5.6,
+       "chars": 1374
+      },
+      {
+       "kind": "letter",
+       "id": "road-repair",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.77,
+       "seconds": 4.3,
+       "chars": 1090
+      },
+      {
+       "kind": "letter",
+       "id": "info-request",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.48,
+       "seconds": 4.6,
+       "chars": 1273
+      },
+      {
+       "kind": "letter",
+       "id": "archive-certificate",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.69,
+       "seconds": 4.2,
+       "chars": 949
+      },
+      {
+       "kind": "table",
+       "id": "appeals-registry",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0,
+       "seconds": 6.2,
+       "chars": 844
+      },
+      {
+       "kind": "table",
+       "id": "payroll-report",
+       "score": 0.938,
+       "fails": [
+        "стр. 2 «Итого начислено, руб.»: «60800» вместо «59800»"
+       ],
+       "ttft": 0,
+       "seconds": 4.2,
+       "chars": 592
+      },
+      {
+       "kind": "table",
+       "id": "addresses",
+       "score": 0.857,
+       "fails": [
+        "стр. 2 «Улица»: «ул Склизкова» вместо «ул. Склизкова»",
+        "стр. 3 «Улица»: «проспект Победы» вместо «пр-кт Победы»",
+        "стр. 3 «Помещение»: «» вместо «кв. 15»"
+       ],
+       "ttft": 0,
+       "seconds": 4.4,
+       "chars": 553
+      }
+     ],
+     "load_seconds": 0.5,
+     "vram_gb": 7.5,
+     "check": 1.0,
+     "check_seconds": 5.4,
+     "letter": 1.0,
+     "letter_seconds": 4.4,
+     "table": 0.932,
+     "table_seconds": 4.9,
+     "overall": 0.977,
+     "chars_per_second": 251
+    },
+    {
+     "model": "gemma3:12b",
+     "cases": [
+      {
+       "kind": "check",
+       "id": "appeals-regulation",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.5,
+       "seconds": 5.1,
+       "chars": 1372
+      },
+      {
+       "kind": "check",
+       "id": "pd-protection",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.75,
+       "seconds": 5.6,
+       "chars": 1315
+      },
+      {
+       "kind": "check",
+       "id": "procurement-tz",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.76,
+       "seconds": 5.6,
+       "chars": 1374
+      },
+      {
+       "kind": "letter",
+       "id": "road-repair",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.77,
+       "seconds": 3.9,
+       "chars": 980
+      },
+      {
+       "kind": "letter",
+       "id": "info-request",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.46,
+       "seconds": 4.6,
+       "chars": 1279
+      },
+      {
+       "kind": "letter",
+       "id": "archive-certificate",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.44,
+       "seconds": 4.2,
+       "chars": 1050
+      },
+      {
+       "kind": "table",
+       "id": "appeals-registry",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0,
+       "seconds": 6.2,
+       "chars": 844
+      },
+      {
+       "kind": "table",
+       "id": "payroll-report",
+       "score": 0.938,
+       "fails": [
+        "стр. 2 «Итого начислено, руб.»: «60800» вместо «59800»"
+       ],
+       "ttft": 0,
+       "seconds": 4.3,
+       "chars": 592
+      },
+      {
+       "kind": "table",
+       "id": "addresses",
+       "score": 0.857,
+       "fails": [
+        "стр. 2 «Улица»: «ул Склизкова» вместо «ул. Склизкова»",
+        "стр. 3 «Улица»: «проспект Победы» вместо «пр-кт Победы»",
+        "стр. 3 «Помещение»: «» вместо «кв. 15»"
+       ],
+       "ttft": 0,
+       "seconds": 4.3,
+       "chars": 553
+      }
+     ],
+     "load_seconds": 0.5,
+     "vram_gb": 7.5,
+     "check": 1.0,
+     "check_seconds": 5.4,
+     "letter": 1.0,
+     "letter_seconds": 4.2,
+     "table": 0.932,
+     "table_seconds": 4.9,
+     "overall": 0.977,
+     "chars_per_second": 254
+    }
+   ]
+  },
+  {
+   "model": "huggingface.co/t-tech/T-lite-it-2.1-GGUF:Q4_K_M",
+   "runs": 3,
+   "check": 0.954,
+   "letter": 0.936,
+   "table": 0.979,
+   "overall": 0.956,
+   "check_seconds": 3.0,
+   "letter_seconds": 2.967,
+   "table_seconds": 2.3,
+   "chars_per_second": 485.333,
+   "vram_gb": 5.0,
+   "details": [
+    {
+     "model": "huggingface.co/t-tech/T-lite-it-2.1-GGUF:Q4_K_M",
+     "cases": [
+      {
+       "kind": "check",
+       "id": "appeals-regulation",
+       "score": 0.917,
+       "fails": [
+        "не применена норма /30 дней/"
+       ],
+       "ttft": 0.31,
+       "seconds": 2.8,
+       "chars": 1380
+      },
+      {
+       "kind": "check",
+       "id": "pd-protection",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.33,
+       "seconds": 3.0,
+       "chars": 1387
+      },
+      {
+       "kind": "check",
+       "id": "procurement-tz",
+       "score": 0.917,
+       "fails": [
+        "осталась ссылка «94-ФЗ»"
+       ],
+       "ttft": 0.36,
+       "seconds": 3.3,
+       "chars": 1644
+      },
+      {
+       "kind": "letter",
+       "id": "road-repair",
+       "score": 0.9,
+       "fails": [
+        "Markdown-разметка"
+       ],
+       "ttft": 0.37,
+       "seconds": 2.5,
+       "chars": 978
+      },
+      {
+       "kind": "letter",
+       "id": "info-request",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.18,
+       "seconds": 2.5,
+       "chars": 1380
+      },
+      {
+       "kind": "letter",
+       "id": "archive-certificate",
+       "score": 0.909,
+       "fails": [
+        "выдуманные номера: ['7 499 123-45-67']"
+       ],
+       "ttft": 0.24,
+       "seconds": 3.3,
+       "chars": 1617
+      },
+      {
+       "kind": "table",
+       "id": "appeals-registry",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0,
+       "seconds": 3.2,
+       "chars": 844
+      },
+      {
+       "kind": "table",
+       "id": "payroll-report",
+       "score": 0.938,
+       "fails": [
+        "стр. 2 «Итого начислено, руб.»: «60000» вместо «59800»"
+       ],
+       "ttft": 0,
+       "seconds": 1.8,
+       "chars": 592
+      },
+      {
+       "kind": "table",
+       "id": "addresses",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0,
+       "seconds": 2.0,
+       "chars": 557
+      }
+     ],
+     "load_seconds": 3.6,
+     "vram_gb": 5.0,
+     "check": 0.945,
+     "check_seconds": 3.0,
+     "letter": 0.936,
+     "letter_seconds": 2.8,
+     "table": 0.979,
+     "table_seconds": 2.3,
+     "overall": 0.953,
+     "chars_per_second": 482
+    },
+    {
+     "model": "huggingface.co/t-tech/T-lite-it-2.1-GGUF:Q4_K_M",
+     "cases": [
+      {
+       "kind": "check",
+       "id": "appeals-regulation",
+       "score": 0.917,
+       "fails": [
+        "не применена норма /30 дней/"
+       ],
+       "ttft": 0.17,
+       "seconds": 2.7,
+       "chars": 1380
+      },
+      {
+       "kind": "check",
+       "id": "pd-protection",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.25,
+       "seconds": 2.8,
+       "chars": 1373
+      },
+      {
+       "kind": "check",
+       "id": "procurement-tz",
+       "score": 0.917,
+       "fails": [
+        "осталась ссылка «94-ФЗ»"
+       ],
+       "ttft": 0.24,
+       "seconds": 3.6,
+       "chars": 1783
+      },
+      {
+       "kind": "letter",
+       "id": "road-repair",
+       "score": 0.9,
+       "fails": [
+        "выдуманные номера: ['8 (800) 123-45-67', '8 (800) 123-45-67']"
+       ],
+       "ttft": 0.29,
+       "seconds": 2.9,
+       "chars": 1105
+      },
+      {
+       "kind": "letter",
+       "id": "info-request",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.25,
+       "seconds": 2.8,
+       "chars": 1513
+      },
+      {
+       "kind": "letter",
+       "id": "archive-certificate",
+       "score": 0.909,
+       "fails": [
+        "выдуманные номера: ['7 495 123-45-67']"
+       ],
+       "ttft": 0.22,
+       "seconds": 3.2,
+       "chars": 1622
+      },
+      {
+       "kind": "table",
+       "id": "appeals-registry",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0,
+       "seconds": 3.2,
+       "chars": 844
+      },
+      {
+       "kind": "table",
+       "id": "payroll-report",
+       "score": 0.938,
+       "fails": [
+        "стр. 2 «Итого начислено, руб.»: «60000» вместо «59800»"
+       ],
+       "ttft": 0,
+       "seconds": 1.9,
+       "chars": 592
+      },
+      {
+       "kind": "table",
+       "id": "addresses",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0,
+       "seconds": 1.8,
+       "chars": 557
+      }
+     ],
+     "load_seconds": 0.2,
+     "vram_gb": 5.0,
+     "check": 0.945,
+     "check_seconds": 3.0,
+     "letter": 0.936,
+     "letter_seconds": 3.0,
+     "table": 0.979,
+     "table_seconds": 2.3,
+     "overall": 0.953,
+     "chars_per_second": 488
+    },
+    {
+     "model": "huggingface.co/t-tech/T-lite-it-2.1-GGUF:Q4_K_M",
+     "cases": [
+      {
+       "kind": "check",
+       "id": "appeals-regulation",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.18,
+       "seconds": 2.8,
+       "chars": 1375
+      },
+      {
+       "kind": "check",
+       "id": "pd-protection",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.25,
+       "seconds": 2.9,
+       "chars": 1431
+      },
+      {
+       "kind": "check",
+       "id": "procurement-tz",
+       "score": 0.917,
+       "fails": [
+        "осталась ссылка «94-ФЗ»"
+       ],
+       "ttft": 0.24,
+       "seconds": 3.3,
+       "chars": 1641
+      },
+      {
+       "kind": "letter",
+       "id": "road-repair",
+       "score": 0.9,
+       "fails": [
+        "выдуманные номера: ['8 (800) 123-45-67', '8 (800) 123-45-67']"
+       ],
+       "ttft": 0.24,
+       "seconds": 3.1,
+       "chars": 1317
+      },
+      {
+       "kind": "letter",
+       "id": "info-request",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.23,
+       "seconds": 3.0,
+       "chars": 1569
+      },
+      {
+       "kind": "letter",
+       "id": "archive-certificate",
+       "score": 0.909,
+       "fails": [
+        "выдуманные номера: ['7 495 123-45-67']"
+       ],
+       "ttft": 0.22,
+       "seconds": 3.3,
+       "chars": 1603
+      },
+      {
+       "kind": "table",
+       "id": "appeals-registry",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0,
+       "seconds": 3.2,
+       "chars": 844
+      },
+      {
+       "kind": "table",
+       "id": "payroll-report",
+       "score": 0.938,
+       "fails": [
+        "стр. 2 «Итого начислено, руб.»: «60000» вместо «59800»"
+       ],
+       "ttft": 0,
+       "seconds": 1.8,
+       "chars": 592
+      },
+      {
+       "kind": "table",
+       "id": "addresses",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0,
+       "seconds": 1.8,
+       "chars": 557
+      }
+     ],
+     "load_seconds": 0.2,
+     "vram_gb": 5.0,
+     "check": 0.972,
+     "check_seconds": 3.0,
+     "letter": 0.936,
+     "letter_seconds": 3.1,
+     "table": 0.979,
+     "table_seconds": 2.3,
+     "overall": 0.962,
+     "chars_per_second": 486
+    }
+   ]
+  },
+  {
+   "model": "qwen3.5:9b",
+   "runs": 3,
+   "check": 0.926,
+   "letter": 0.989,
+   "table": 0.926,
+   "overall": 0.947,
+   "check_seconds": 3.567,
+   "letter_seconds": 3.967,
+   "table_seconds": 3.467,
+   "chars_per_second": 396.333,
+   "vram_gb": 5.3,
+   "details": [
+    {
+     "model": "qwen3.5:9b",
+     "cases": [
+      {
+       "kind": "check",
+       "id": "appeals-regulation",
+       "score": 0.917,
+       "fails": [
+        "нет «149-ФЗ»"
+       ],
+       "ttft": 0.5,
+       "seconds": 3.4,
+       "chars": 1469
+      },
+      {
+       "kind": "check",
+       "id": "pd-protection",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.51,
+       "seconds": 3.8,
+       "chars": 1325
+      },
+      {
+       "kind": "check",
+       "id": "procurement-tz",
+       "score": 0.917,
+       "fails": [
+        "нет «7.0.8-2013»"
+       ],
+       "ttft": 0.52,
+       "seconds": 3.8,
+       "chars": 1350
+      },
+      {
+       "kind": "letter",
+       "id": "road-repair",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.45,
+       "seconds": 3.8,
+       "chars": 1604
+      },
+      {
+       "kind": "letter",
+       "id": "info-request",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.39,
+       "seconds": 3.2,
+       "chars": 1357
+      },
+      {
+       "kind": "letter",
+       "id": "archive-certificate",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.34,
+       "seconds": 3.4,
+       "chars": 1204
+      },
+      {
+       "kind": "table",
+       "id": "appeals-registry",
+       "score": 0.933,
+       "fails": [
+        "стр. 3 «Дата обращения»: «15.03.26» вместо «15.03.2026»",
+        "стр. 5 «Вид обращения»: «Заявление» вместо «Жалоба»"
+       ],
+       "ttft": 0,
+       "seconds": 4.4,
+       "chars": 845
+      },
+      {
+       "kind": "table",
+       "id": "payroll-report",
+       "score": 0.938,
+       "fails": [
+        "стр. 2 «Итого начислено, руб.»: «60250» вместо «59800»"
+       ],
+       "ttft": 0,
+       "seconds": 2.7,
+       "chars": 592
+      },
+      {
+       "kind": "table",
+       "id": "addresses",
+       "score": 0.952,
+       "fails": [
+        "стр. 2 «Регион»: «» вместо «Тверская область»"
+       ],
+       "ttft": 0,
+       "seconds": 3.1,
+       "chars": 541
+      }
+     ],
+     "load_seconds": 2.4,
+     "vram_gb": 5.3,
+     "check": 0.945,
+     "check_seconds": 3.7,
+     "letter": 1.0,
+     "letter_seconds": 3.5,
+     "table": 0.941,
+     "table_seconds": 3.4,
+     "overall": 0.962,
+     "chars_per_second": 388
+    },
+    {
+     "model": "qwen3.5:9b",
+     "cases": [
+      {
+       "kind": "check",
+       "id": "appeals-regulation",
+       "score": 0.917,
+       "fails": [
+        "нет «149-ФЗ»"
+       ],
+       "ttft": 0.37,
+       "seconds": 3.5,
+       "chars": 1449
+      },
+      {
+       "kind": "check",
+       "id": "pd-protection",
+       "score": 0.917,
+       "fails": [
+        "осталась ссылка «цифровой подпис»"
+       ],
+       "ttft": 0.4,
+       "seconds": 3.6,
+       "chars": 1320
+      },
+      {
+       "kind": "check",
+       "id": "procurement-tz",
+       "score": 0.917,
+       "fails": [
+        "нет «7.0.8-2013»"
+       ],
+       "ttft": 0.41,
+       "seconds": 3.1,
+       "chars": 1148
+      },
+      {
+       "kind": "letter",
+       "id": "road-repair",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.39,
+       "seconds": 5.5,
+       "chars": 2624
+      },
+      {
+       "kind": "letter",
+       "id": "info-request",
+       "score": 0.9,
+       "fails": [
+        "нет обращения «Уважаемый…»"
+       ],
+       "ttft": 0.39,
+       "seconds": 4.4,
+       "chars": 1832
+      },
+      {
+       "kind": "letter",
+       "id": "archive-certificate",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.39,
+       "seconds": 3.5,
+       "chars": 1338
+      },
+      {
+       "kind": "table",
+       "id": "appeals-registry",
+       "score": 0.833,
+       "fails": [
+        "стр. 3 «Дата обращения»: «15.03.26» вместо «15.03.2026»",
+        "стр. 5 «Фамилия»: «ОРЛОВ» вместо «Орлов»",
+        "стр. 5 «Имя»: «ДМИТРИЙ» вместо «Дмитрий»",
+        "стр. 5 «Отчество»: «АЛЕКСАНДРОВИЧ» вместо «Александрович»",
+        "стр. 5 «Вид обращения»: «Заявление» вместо «Жалоба»"
+       ],
+       "ttft": 0,
+       "seconds": 4.4,
+       "chars": 845
+      },
+      {
+       "kind": "table",
+       "id": "payroll-report",
+       "score": 0.938,
+       "fails": [
+        "стр. 2 «Итого начислено, руб.»: «60850» вместо «59800»"
+       ],
+       "ttft": 0,
+       "seconds": 2.9,
+       "chars": 592
+      },
+      {
+       "kind": "table",
+       "id": "addresses",
+       "score": 0.952,
+       "fails": [
+        "стр. 2 «Регион»: «» вместо «Тверская область»"
+       ],
+       "ttft": 0,
+       "seconds": 3.1,
+       "chars": 541
+      }
+     ],
+     "load_seconds": 0.3,
+     "vram_gb": 5.3,
+     "check": 0.917,
+     "check_seconds": 3.4,
+     "letter": 0.967,
+     "letter_seconds": 4.5,
+     "table": 0.908,
+     "table_seconds": 3.5,
+     "overall": 0.931,
+     "chars_per_second": 411
+    },
+    {
+     "model": "qwen3.5:9b",
+     "cases": [
+      {
+       "kind": "check",
+       "id": "appeals-regulation",
+       "score": 0.917,
+       "fails": [
+        "нет «149-ФЗ»"
+       ],
+       "ttft": 0.39,
+       "seconds": 3.3,
+       "chars": 1463
+      },
+      {
+       "kind": "check",
+       "id": "pd-protection",
+       "score": 0.917,
+       "fails": [
+        "осталась ссылка «цифровой подпис»"
+       ],
+       "ttft": 0.41,
+       "seconds": 3.7,
+       "chars": 1373
+      },
+      {
+       "kind": "check",
+       "id": "procurement-tz",
+       "score": 0.917,
+       "fails": [
+        "нет «7.0.8-2013»"
+       ],
+       "ttft": 0.4,
+       "seconds": 3.7,
+       "chars": 1364
+      },
+      {
+       "kind": "letter",
+       "id": "road-repair",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.4,
+       "seconds": 4.1,
+       "chars": 1674
+      },
+      {
+       "kind": "letter",
+       "id": "info-request",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.41,
+       "seconds": 4.8,
+       "chars": 1894
+      },
+      {
+       "kind": "letter",
+       "id": "archive-certificate",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.41,
+       "seconds": 2.9,
+       "chars": 1004
+      },
+      {
+       "kind": "table",
+       "id": "appeals-registry",
+       "score": 0.9,
+       "fails": [
+        "стр. 3 «Дата обращения»: «15.03.26» вместо «15.03.2026»",
+        "стр. 5 «Дата обращения»: «17.03.26» вместо «17.03.2026»",
+        "стр. 5 «Вид обращения»: «Заявление» вместо «Жалоба»"
+       ],
+       "ttft": 0,
+       "seconds": 4.4,
+       "chars": 843
+      },
+      {
+       "kind": "table",
+       "id": "payroll-report",
+       "score": 0.938,
+       "fails": [
+        "стр. 2 «Итого начислено, руб.»: «60350» вместо «59800»"
+       ],
+       "ttft": 0,
+       "seconds": 2.9,
+       "chars": 592
+      },
+      {
+       "kind": "table",
+       "id": "addresses",
+       "score": 0.952,
+       "fails": [
+        "стр. 2 «Регион»: «» вместо «Тверская область»"
+       ],
+       "ttft": 0,
+       "seconds": 3.1,
+       "chars": 541
+      }
+     ],
+     "load_seconds": 0.3,
+     "vram_gb": 5.3,
+     "check": 0.917,
+     "check_seconds": 3.6,
+     "letter": 1.0,
+     "letter_seconds": 3.9,
+     "table": 0.93,
+     "table_seconds": 3.5,
+     "overall": 0.949,
+     "chars_per_second": 390
+    }
+   ]
+  },
+  {
+   "model": "hf.co/yandex/YandexGPT-5-Lite-8B-instruct-GGUF:Q4_K_M",
+   "runs": 3,
+   "check": 0.732,
+   "letter": 0.946,
+   "table": 0.552,
+   "overall": 0.743,
+   "check_seconds": 3.3,
+   "letter_seconds": 1.333,
+   "table_seconds": 1.733,
+   "chars_per_second": 508.667,
+   "vram_gb": 4.9,
+   "details": [
+    {
+     "model": "hf.co/yandex/YandexGPT-5-Lite-8B-instruct-GGUF:Q4_K_M",
+     "cases": [
+      {
+       "kind": "check",
+       "id": "appeals-regulation",
+       "score": 0.5,
+       "fails": [
+        "осталась ссылка «2534-VII»",
+        "осталась ссылка «24-ФЗ»",
+        "осталась ссылка «6.30-2003»",
+        "осталась ссылка «РСФСР»",
+        "не применена норма /тр[её]х дней|3 дн/",
+        "текст переписан слишком сильно (сходство 0.54)"
+       ],
+       "ttft": 0.21,
+       "seconds": 4.9,
+       "chars": 2463
+      },
+      {
+       "kind": "check",
+       "id": "pd-protection",
+       "score": 0.417,
+       "fails": [
+        "осталась ссылка «24-ФЗ»",
+        "осталась ссылка «1-ФЗ»",
+        "осталась ссылка «1340-03»",
+        "осталась ссылка «цифровой подпис»",
+        "не применена норма /24 час/",
+        "не применена норма /отдельн/",
+        "текст переписан слишком сильно (сходство 0.59)"
+       ],
+       "ttft": 0.27,
+       "seconds": 4.8,
+       "chars": 2233
+      },
+      {
+       "kind": "check",
+       "id": "procurement-tz",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.29,
+       "seconds": 2.5,
+       "chars": 1269
+      },
+      {
+       "kind": "letter",
+       "id": "road-repair",
+       "score": 0.9,
+       "fails": [
+        "нет /водоотвод/"
+       ],
+       "ttft": 0.23,
+       "seconds": 1.2,
+       "chars": 553
+      },
+      {
+       "kind": "letter",
+       "id": "info-request",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.16,
+       "seconds": 1.8,
+       "chars": 966
+      },
+      {
+       "kind": "letter",
+       "id": "archive-certificate",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.16,
+       "seconds": 1.2,
+       "chars": 648
+      },
+      {
+       "kind": "table",
+       "id": "appeals-registry",
+       "score": 0.8,
+       "fails": [
+        "стр. 1 «Телефон»: «+7 916 123-45-67» вместо «+79161234567»",
+        "стр. 2 «Телефон»: «+7 903 555 12 34» вместо «+79035551234»",
+        "стр. 3 «Телефон»: «+7 905 111 22 33» вместо «+79051112233»",
+        "стр. 4 «Телефон»: «+7 926 700 80 90» вместо «+79267008090»",
+        "стр. 5 «Телефон»: «+7 495 987-65-43» вместо «+74959876543»",
+        "стр. 5 «Вид обращения»: «Заявление» вместо «Жалоба»"
+       ],
+       "ttft": 0,
+       "seconds": 3.4,
+       "chars": 867
+      },
+      {
+       "kind": "table",
+       "id": "payroll-report",
+       "score": 0.0,
+       "fails": [
+        "ошибка: Модель не вернула JSON"
+       ],
+       "ttft": 0,
+       "seconds": 0,
+       "chars": 0
+      },
+      {
+       "kind": "table",
+       "id": "addresses",
+       "score": 0.857,
+       "fails": [
+        "стр. 1 «Дом»: «д. 12» вместо «12»",
+        "стр. 2 «Дом»: «д. 46» вместо «46»",
+        "стр. 3 «Дом»: «д. 100 к. 2» вместо «100 к. 2»"
+       ],
+       "ttft": 0,
+       "seconds": 1.9,
+       "chars": 566
+      }
+     ],
+     "load_seconds": 3.4,
+     "vram_gb": 4.9,
+     "check": 0.639,
+     "check_seconds": 4.1,
+     "letter": 0.967,
+     "letter_seconds": 1.4,
+     "table": 0.552,
+     "table_seconds": 1.8,
+     "overall": 0.719,
+     "chars_per_second": 496
+    },
+    {
+     "model": "hf.co/yandex/YandexGPT-5-Lite-8B-instruct-GGUF:Q4_K_M",
+     "cases": [
+      {
+       "kind": "check",
+       "id": "appeals-regulation",
+       "score": 0.917,
+       "fails": [
+        "не применена норма /тр[её]х дней|3 дн/"
+       ],
+       "ttft": 0.12,
+       "seconds": 2.6,
+       "chars": 1425
+      },
+      {
+       "kind": "check",
+       "id": "pd-protection",
+       "score": 0.333,
+       "fails": [
+        "осталась ссылка «24-ФЗ»",
+        "осталась ссылка «1-ФЗ»",
+        "осталась ссылка «1340-03»",
+        "осталась ссылка «цифровой подпис»",
+        "нет «152-ФЗ»",
+        "не применена норма /24 час/",
+        "не применена норма /отдельн/",
+        "текст переписан слишком сильно (сходство 0.42)"
+       ],
+       "ttft": 0.17,
+       "seconds": 2.8,
+       "chars": 1350
+      },
+      {
+       "kind": "check",
+       "id": "procurement-tz",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.17,
+       "seconds": 2.5,
+       "chars": 1269
+      },
+      {
+       "kind": "letter",
+       "id": "road-repair",
+       "score": 0.9,
+       "fails": [
+        "нет /водоотвод/"
+       ],
+       "ttft": 0.16,
+       "seconds": 1.0,
+       "chars": 564
+      },
+      {
+       "kind": "letter",
+       "id": "info-request",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.16,
+       "seconds": 2.0,
+       "chars": 1085
+      },
+      {
+       "kind": "letter",
+       "id": "archive-certificate",
+       "score": 0.909,
+       "fails": [
+        "длина 408 симв."
+       ],
+       "ttft": 0.14,
+       "seconds": 0.9,
+       "chars": 408
+      },
+      {
+       "kind": "table",
+       "id": "appeals-registry",
+       "score": 0.8,
+       "fails": [
+        "стр. 1 «Телефон»: «+7 916 123-45-67» вместо «+79161234567»",
+        "стр. 2 «Телефон»: «+7 903 555 12 34» вместо «+79035551234»",
+        "стр. 3 «Телефон»: «+7 905 111 22 33» вместо «+79051112233»",
+        "стр. 4 «Телефон»: «+7 926 700 80 90» вместо «+79267008090»",
+        "стр. 5 «Телефон»: «+7 495 987-65-43» вместо «+74959876543»",
+        "стр. 5 «Вид обращения»: «Заявление» вместо «Жалоба»"
+       ],
+       "ttft": 0,
+       "seconds": 3.2,
+       "chars": 867
+      },
+      {
+       "kind": "table",
+       "id": "payroll-report",
+       "score": 0.0,
+       "fails": [
+        "ошибка: Модель не вернула JSON"
+       ],
+       "ttft": 0,
+       "seconds": 0,
+       "chars": 0
+      },
+      {
+       "kind": "table",
+       "id": "addresses",
+       "score": 0.857,
+       "fails": [
+        "стр. 1 «Дом»: «д. 12» вместо «12»",
+        "стр. 2 «Дом»: «д. 46» вместо «46»",
+        "стр. 3 «Дом»: «д. 100 к. 2» вместо «100 к. 2»"
+       ],
+       "ttft": 0,
+       "seconds": 1.9,
+       "chars": 566
+      }
+     ],
+     "load_seconds": 0.2,
+     "vram_gb": 4.9,
+     "check": 0.75,
+     "check_seconds": 2.6,
+     "letter": 0.936,
+     "letter_seconds": 1.3,
+     "table": 0.552,
+     "table_seconds": 1.7,
+     "overall": 0.746,
+     "chars_per_second": 517
+    },
+    {
+     "model": "hf.co/yandex/YandexGPT-5-Lite-8B-instruct-GGUF:Q4_K_M",
+     "cases": [
+      {
+       "kind": "check",
+       "id": "appeals-regulation",
+       "score": 0.917,
+       "fails": [
+        "не применена норма /тр[её]х дней|3 дн/"
+       ],
+       "ttft": 0.11,
+       "seconds": 2.5,
+       "chars": 1413
+      },
+      {
+       "kind": "check",
+       "id": "pd-protection",
+       "score": 0.5,
+       "fails": [
+        "осталась ссылка «24-ФЗ»",
+        "осталась ссылка «1-ФЗ»",
+        "осталась ссылка «1340-03»",
+        "осталась ссылка «цифровой подпис»",
+        "не применена норма /24 час/",
+        "не применена норма /отдельн/"
+       ],
+       "ttft": 0.17,
+       "seconds": 4.5,
+       "chars": 2089
+      },
+      {
+       "kind": "check",
+       "id": "procurement-tz",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.18,
+       "seconds": 2.5,
+       "chars": 1269
+      },
+      {
+       "kind": "letter",
+       "id": "road-repair",
+       "score": 0.9,
+       "fails": [
+        "нет /водоотвод/"
+       ],
+       "ttft": 0.16,
+       "seconds": 1.0,
+       "chars": 559
+      },
+      {
+       "kind": "letter",
+       "id": "info-request",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.13,
+       "seconds": 1.9,
+       "chars": 1082
+      },
+      {
+       "kind": "letter",
+       "id": "archive-certificate",
+       "score": 0.909,
+       "fails": [
+        "длина 408 симв."
+       ],
+       "ttft": 0.14,
+       "seconds": 0.9,
+       "chars": 408
+      },
+      {
+       "kind": "table",
+       "id": "appeals-registry",
+       "score": 0.8,
+       "fails": [
+        "стр. 1 «Телефон»: «+7 916 123-45-67» вместо «+79161234567»",
+        "стр. 2 «Телефон»: «+7 903 555 12 34» вместо «+79035551234»",
+        "стр. 3 «Телефон»: «+7 905 111 22 33» вместо «+79051112233»",
+        "стр. 4 «Телефон»: «+7 926 700 80 90» вместо «+79267008090»",
+        "стр. 5 «Телефон»: «+7 495 987-65-43» вместо «+74959876543»",
+        "стр. 5 «Вид обращения»: «Заявление» вместо «Жалоба»"
+       ],
+       "ttft": 0,
+       "seconds": 3.2,
+       "chars": 867
+      },
+      {
+       "kind": "table",
+       "id": "payroll-report",
+       "score": 0.0,
+       "fails": [
+        "ошибка: Модель не вернула JSON"
+       ],
+       "ttft": 0,
+       "seconds": 0,
+       "chars": 0
+      },
+      {
+       "kind": "table",
+       "id": "addresses",
+       "score": 0.857,
+       "fails": [
+        "стр. 1 «Дом»: «д. 12» вместо «12»",
+        "стр. 2 «Дом»: «д. 46» вместо «46»",
+        "стр. 3 «Дом»: «д. 100 к. 2» вместо «100 к. 2»"
+       ],
+       "ttft": 0,
+       "seconds": 1.9,
+       "chars": 566
+      }
+     ],
+     "load_seconds": 0.2,
+     "vram_gb": 4.9,
+     "check": 0.806,
+     "check_seconds": 3.2,
+     "letter": 0.936,
+     "letter_seconds": 1.3,
+     "table": 0.552,
+     "table_seconds": 1.7,
+     "overall": 0.765,
+     "chars_per_second": 513
+    }
+   ]
+  },
+  {
+   "model": "qwen3:1.7b",
+   "runs": 3,
+   "check": 0.797,
+   "letter": 0.903,
+   "table": 0.568,
+   "overall": 0.756,
+   "check_seconds": 1.3,
+   "letter_seconds": 1.033,
+   "table_seconds": 1.1,
+   "chars_per_second": 959.667,
+   "vram_gb": 1.6,
+   "details": [
+    {
+     "model": "qwen3:1.7b",
+     "cases": [
+      {
+       "kind": "check",
+       "id": "appeals-regulation",
+       "score": 0.833,
+       "fails": [
+        "не применена норма /тр[её]х дней|3 дн/",
+        "не применена норма /30 дней/"
+       ],
+       "ttft": 0.18,
+       "seconds": 1.3,
+       "chars": 1252
+      },
+      {
+       "kind": "check",
+       "id": "pd-protection",
+       "score": 0.667,
+       "fails": [
+        "осталась ссылка «1-ФЗ»",
+        "осталась ссылка «цифровой подпис»",
+        "нет «149-ФЗ»",
+        "не применена норма /отдельн/"
+       ],
+       "ttft": 0.25,
+       "seconds": 1.4,
+       "chars": 1165
+      },
+      {
+       "kind": "check",
+       "id": "procurement-tz",
+       "score": 0.917,
+       "fails": [
+        "нет «248-ФЗ»"
+       ],
+       "ttft": 0.26,
+       "seconds": 1.4,
+       "chars": 1192
+      },
+      {
+       "kind": "letter",
+       "id": "road-repair",
+       "score": 0.9,
+       "fails": [
+        "нет /II квартал|втор\\w+ квартал/"
+       ],
+       "ttft": 0.26,
+       "seconds": 1.1,
+       "chars": 1250
+      },
+      {
+       "kind": "letter",
+       "id": "info-request",
+       "score": 0.9,
+       "fails": [
+        "нет /ЕИС|единой информационной системе/"
+       ],
+       "ttft": 0.14,
+       "seconds": 1.1,
+       "chars": 1142
+      },
+      {
+       "kind": "letter",
+       "id": "archive-certificate",
+       "score": 0.909,
+       "fails": [
+        "нет /1991/"
+       ],
+       "ttft": 0.14,
+       "seconds": 1.0,
+       "chars": 1023
+      },
+      {
+       "kind": "table",
+       "id": "appeals-registry",
+       "score": 0.633,
+       "fails": [
+        "стр. 1 «Дата обращения»: «12.03.26» вместо «12.03.2026»",
+        "стр. 1 «Телефон»: «+7 916 123 45 67» вместо «+79161234567»",
+        "стр. 2 «Дата обращения»: «2026-03-14» вместо «14.03.2026»",
+        "стр. 2 «Телефон»: «+7 903 555 12 34» вместо «+79035551234»",
+        "стр. 3 «Дата обращения»: «15.03.26» вместо «15.03.2026»",
+        "стр. 3 «Телефон»: «+7 905 111 22 33» вместо «+79051112233»",
+        "стр. 4 «Дата обращения»: «16.03.26» вместо «16.03.2026»",
+        "стр. 4 «Телефон»: «+7 926 700 80 90» вместо «+79267008090»",
+        "стр. 5 «Дата обращения»: «17.03.26» вместо «17.03.2026»",
+        "стр. 5 «Телефон»: «+7 495 987 65 43» вместо «+74959876543»",
+        "стр. 5 «Вид обращения»: «Заявление» вместо «Жалоба»"
+       ],
+       "ttft": 0,
+       "seconds": 1.4,
+       "chars": 859
+      },
+      {
+       "kind": "table",
+       "id": "payroll-report",
+       "score": 0.188,
+       "fails": [
+        "стр. 1 «ФИО»: «Алексеева Мария Олеговна» вместо «Алексеева М. О.»",
+        "стр. 1 «Должность»: «ГЛАВНЫЙ СПЕЦИАЛИСТ» вместо «Главный специалист»",
+        "стр. 1 «Итого начислено, руб.»: «45000» вместо «54000»",
+        "стр. 2 «ФИО»: «Борисов Игорь Петрович» вместо «Борисов И. П.»",
+        "стр. 2 «Должность»: «ВЕДУЩИЙ СПЕЦИАЛИСТ» вместо «Ведущий специалист»",
+        "стр. 2 «Итого начислено, руб.»: «52000» вместо «59800»",
+        "стр. 3 «ФИО»: «Васильев Андрей Ильич» вместо «Васильев А. И.»",
+        "стр. 3 «Подразделение»: «Отдел ИТ» вместо «Отдел информационных технологий»",
+        "стр. 3 «Должность»: «НАЧАЛЬНИК ОТДЕЛА» вместо «Начальник отдела»",
+        "стр. 3 «Итого начислено, руб.»: «78000» вместо «101400»",
+        "стр. 4 «ФИО»: «Григорьева Елена Сергеевна» вместо «Григорьева Е. С.»",
+        "стр. 4 «Должность»: «СПЕЦИАЛИСТ 1 РАЗРЯДА» вместо «Специалист 1 разряда»",
+        "стр. 4 «Итого начислено, руб.»: «38500» вместо «42350»"
+       ],
+       "ttft": 0,
+       "seconds": 1.0,
+       "chars": 603
+      },
+      {
+       "kind": "table",
+       "id": "addresses",
+       "score": 0.905,
+       "fails": [
+        "стр. 3 «Дом»: «100» вместо «100 к. 2»",
+        "стр. 3 «Помещение»: «корпус 2» вместо «кв. 15»"
+       ],
+       "ttft": 0,
+       "seconds": 0.9,
+       "chars": 554
+      }
+     ],
+     "load_seconds": 1.0,
+     "vram_gb": 1.6,
+     "check": 0.806,
+     "check_seconds": 1.4,
+     "letter": 0.903,
+     "letter_seconds": 1.1,
+     "table": 0.575,
+     "table_seconds": 1.1,
+     "overall": 0.761,
+     "chars_per_second": 962
+    },
+    {
+     "model": "qwen3:1.7b",
+     "cases": [
+      {
+       "kind": "check",
+       "id": "appeals-regulation",
+       "score": 0.75,
+       "fails": [
+        "нет «Российской Федерации об административных»",
+        "не применена норма /тр[её]х дней|3 дн/",
+        "не применена норма /30 дней/"
+       ],
+       "ttft": 0.14,
+       "seconds": 1.1,
+       "chars": 1119
+      },
+      {
+       "kind": "check",
+       "id": "pd-protection",
+       "score": 0.75,
+       "fails": [
+        "нет «3685-21»",
+        "не применена норма /24 час/",
+        "не применена норма /отдельн/"
+       ],
+       "ttft": 0.22,
+       "seconds": 1.1,
+       "chars": 929
+      },
+      {
+       "kind": "check",
+       "id": "procurement-tz",
+       "score": 0.917,
+       "fails": [
+        "нет «248-ФЗ»"
+       ],
+       "ttft": 0.23,
+       "seconds": 1.4,
+       "chars": 1192
+      },
+      {
+       "kind": "letter",
+       "id": "road-repair",
+       "score": 0.8,
+       "fails": [
+        "нет /водоотвод/",
+        "выдуманные номера: ['7 (495) 123-45-67']"
+       ],
+       "ttft": 0.24,
+       "seconds": 1.0,
+       "chars": 911
+      },
+      {
+       "kind": "letter",
+       "id": "info-request",
+       "score": 0.9,
+       "fails": [
+        "нет /сквер/"
+       ],
+       "ttft": 0.14,
+       "seconds": 0.7,
+       "chars": 687
+      },
+      {
+       "kind": "letter",
+       "id": "archive-certificate",
+       "score": 0.909,
+       "fails": [
+        "нет /1991/"
+       ],
+       "ttft": 0.14,
+       "seconds": 1.0,
+       "chars": 1061
+      },
+      {
+       "kind": "table",
+       "id": "appeals-registry",
+       "score": 0.633,
+       "fails": [
+        "стр. 1 «Дата обращения»: «12.03.26» вместо «12.03.2026»",
+        "стр. 1 «Телефон»: «+7 916 123 45 67» вместо «+79161234567»",
+        "стр. 2 «Дата обращения»: «2026-03-14» вместо «14.03.2026»",
+        "стр. 2 «Телефон»: «+7 903 555 12 34» вместо «+79035551234»",
+        "стр. 3 «Дата обращения»: «15.03.26» вместо «15.03.2026»",
+        "стр. 3 «Телефон»: «+7 905 111 22 33» вместо «+79051112233»",
+        "стр. 4 «Дата обращения»: «16.03.26» вместо «16.03.2026»",
+        "стр. 4 «Телефон»: «+7 926 700 80 90» вместо «+79267008090»",
+        "стр. 5 «Дата обращения»: «17.03.26» вместо «17.03.2026»",
+        "стр. 5 «Телефон»: «+7 495 987 65 43» вместо «+74959876543»",
+        "стр. 5 «Вид обращения»: «Заявление» вместо «Жалоба»"
+       ],
+       "ttft": 0,
+       "seconds": 1.4,
+       "chars": 859
+      },
+      {
+       "kind": "table",
+       "id": "payroll-report",
+       "score": 0.188,
+       "fails": [
+        "стр. 1 «ФИО»: «Алексеева Мария Олеговна» вместо «Алексеева М. О.»",
+        "стр. 1 «Должность»: «ГЛАВНЫЙ СПЕЦИАЛИСТ» вместо «Главный специалист»",
+        "стр. 1 «Итого начислено, руб.»: «45000» вместо «54000»",
+        "стр. 2 «ФИО»: «Борисов Игорь Петрович» вместо «Борисов И. П.»",
+        "стр. 2 «Должность»: «ВЕДУЩИЙ СПЕЦИАЛИСТ» вместо «Ведущий специалист»",
+        "стр. 2 «Итого начислено, руб.»: «52000» вместо «59800»",
+        "стр. 3 «ФИО»: «Васильев Андрей Ильич» вместо «Васильев А. И.»",
+        "стр. 3 «Подразделение»: «Отдел ИТ» вместо «Отдел информационных технологий»",
+        "стр. 3 «Должность»: «НАЧАЛЬНИК ОТДЕЛА» вместо «Начальник отдела»",
+        "стр. 3 «Итого начислено, руб.»: «78000» вместо «101400»",
+        "стр. 4 «ФИО»: «Григорьева Елена Сергеевна» вместо «Григорьева Е. С.»",
+        "стр. 4 «Должность»: «СПЕЦИАЛИСТ 1 РАЗРЯДА» вместо «Специалист 1 разряда»",
+        "стр. 4 «Итого начислено, руб.»: «38500» вместо «42350»"
+       ],
+       "ttft": 0,
+       "seconds": 1.0,
+       "chars": 603
+      },
+      {
+       "kind": "table",
+       "id": "addresses",
+       "score": 0.905,
+       "fails": [
+        "стр. 3 «Дом»: «100» вместо «100 к. 2»",
+        "стр. 3 «Помещение»: «корпус 2» вместо «кв. 15»"
+       ],
+       "ttft": 0,
+       "seconds": 0.9,
+       "chars": 554
+      }
+     ],
+     "load_seconds": 0.2,
+     "vram_gb": 1.6,
+     "check": 0.806,
+     "check_seconds": 1.2,
+     "letter": 0.87,
+     "letter_seconds": 0.9,
+     "table": 0.575,
+     "table_seconds": 1.1,
+     "overall": 0.75,
+     "chars_per_second": 936
+    },
+    {
+     "model": "qwen3:1.7b",
+     "cases": [
+      {
+       "kind": "check",
+       "id": "appeals-regulation",
+       "score": 0.75,
+       "fails": [
+        "нет «Российской Федерации об административных»",
+        "не применена норма /тр[её]х дней|3 дн/",
+        "не применена норма /30 дней/"
+       ],
+       "ttft": 0.14,
+       "seconds": 1.1,
+       "chars": 1119
+      },
+      {
+       "kind": "check",
+       "id": "pd-protection",
+       "score": 0.667,
+       "fails": [
+        "осталась ссылка «1-ФЗ»",
+        "осталась ссылка «цифровой подпис»",
+        "нет «149-ФЗ»",
+        "не применена норма /отдельн/"
+       ],
+       "ttft": 0.22,
+       "seconds": 1.4,
+       "chars": 1164
+      },
+      {
+       "kind": "check",
+       "id": "procurement-tz",
+       "score": 0.917,
+       "fails": [
+        "нет «248-ФЗ»"
+       ],
+       "ttft": 0.22,
+       "seconds": 1.4,
+       "chars": 1192
+      },
+      {
+       "kind": "letter",
+       "id": "road-repair",
+       "score": 1.0,
+       "fails": [],
+       "ttft": 0.24,
+       "seconds": 0.9,
+       "chars": 930
+      },
+      {
+       "kind": "letter",
+       "id": "info-request",
+       "score": 0.9,
+       "fails": [
+        "нет /сквер/"
+       ],
+       "ttft": 0.14,
+       "seconds": 0.6,
+       "chars": 614
+      },
+      {
+       "kind": "letter",
+       "id": "archive-certificate",
+       "score": 0.909,
+       "fails": [
+        "нет /1991/"
+       ],
+       "ttft": 0.14,
+       "seconds": 1.8,
+       "chars": 2045
+      },
+      {
+       "kind": "table",
+       "id": "appeals-registry",
+       "score": 0.567,
+       "fails": [
+        "стр. 1 «Дата обращения»: «12.03.26» вместо «12.03.2026»",
+        "стр. 1 «Телефон»: «+7 916 123 45 67» вместо «+79161234567»",
+        "стр. 2 «Дата обращения»: «2026-03-14» вместо «14.03.2026»",
+        "стр. 2 «Телефон»: «+7 903 555 12 34» вместо «+79035551234»",
+        "стр. 3 «Дата обращения»: «15.03.26» вместо «15.03.2026»",
+        "стр. 3 «Телефон»: «+7 905 111 22 33» вместо «+79051112233»",
+        "стр. 4 «Дата обращения»: «16.03.26» вместо «16.03.2026»",
+        "стр. 4 «Телефон»: «+7 926 700 80 90» вместо «+79267008090»",
+        "стр. 4 «Вид обращения»: «Прошу» вместо «Заявление»",
+        "стр. 5 «Фамилия»: «ОРЛОВ» вместо «Орлов»",
+        "стр. 5 «Дата обращения»: «17 мар 2026 г.» вместо «17.03.2026»",
+        "стр. 5 «Телефон»: «+7 495 987 65 43» вместо «+74959876543»",
+        "стр. 5 «Вид обращения»: «Во дворе» вместо «Жалоба»"
+       ],
+       "ttft": 0,
+       "seconds": 1.4,
+       "chars": 860
+      },
+      {
+       "kind": "table",
+       "id": "payroll-report",
+       "score": 0.188,
+       "fails": [
+        "стр. 1 «ФИО»: «Алексеева Мария Олеговна» вместо «Алексеева М. О.»",
+        "стр. 1 «Должность»: «ГЛАВНЫЙ СПЕЦИАЛИСТ» вместо «Главный специалист»",
+        "стр. 1 «Итого начислено, руб.»: «45000» вместо «54000»",
+        "стр. 2 «ФИО»: «Борисов Игорь Петрович» вместо «Борисов И. П.»",
+        "стр. 2 «Должность»: «ВЕДУЩИЙ СПЕЦИАЛИСТ» вместо «Ведущий специалист»",
+        "стр. 2 «Итого начислено, руб.»: «52000» вместо «59800»",
+        "стр. 3 «ФИО»: «Васильев Андрей Ильич» вместо «Васильев А. И.»",
+        "стр. 3 «Подразделение»: «Отдел ИТ» вместо «Отдел информационных технологий»",
+        "стр. 3 «Должность»: «НАЧАЛЬНИК ОТДЕЛА» вместо «Начальник отдела»",
+        "стр. 3 «Итого начислено, руб.»: «78000» вместо «101400»",
+        "стр. 4 «ФИО»: «Григорьева Елена Сергеевна» вместо «Григорьева Е. С.»",
+        "стр. 4 «Должность»: «СПЕЦИАЛИСТ 1 РАЗРЯДА» вместо «Специалист 1 разряда»",
+        "стр. 4 «Итого начислено, руб.»: «38500» вместо «42350»"
+       ],
+       "ttft": 0,
+       "seconds": 1.0,
+       "chars": 603
+      },
+      {
+       "kind": "table",
+       "id": "addresses",
+       "score": 0.905,
+       "fails": [
+        "стр. 3 «Дом»: «100» вместо «100 к. 2»",
+        "стр. 3 «Помещение»: «корпус 2» вместо «кв. 15»"
+       ],
+       "ttft": 0,
+       "seconds": 0.9,
+       "chars": 554
+      }
+     ],
+     "load_seconds": 0.2,
+     "vram_gb": 1.6,
+     "check": 0.778,
+     "check_seconds": 1.3,
+     "letter": 0.936,
+     "letter_seconds": 1.1,
+     "table": 0.553,
+     "table_seconds": 1.1,
+     "overall": 0.756,
+     "chars_per_second": 981
+    }
+   ]
+  }
+ ]
+}

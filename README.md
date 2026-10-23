@@ -42,7 +42,7 @@
 
 ```bash
 cp .env.example .env        # заполнить SECRET_KEY, ADMIN_PASSWORD, POSTGRES_PASSWORD
-ollama pull qwen3:14b       # если модель на хосте
+ollama pull qwen3:14b       # если модель на хосте; запускать с OLLAMA_CONTEXT_LENGTH=16384
 make up-local               # собрать и запустить
 ```
 

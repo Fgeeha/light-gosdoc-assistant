@@ -8,6 +8,9 @@ import json
 import re
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal, TypedDict
+
+from app.llm import Message
 
 DATA = Path(__file__).resolve().parent.parent / "data"
 
@@ -19,6 +22,21 @@ _GENERIC_REFS = re.compile(
     r"|СП\s*[\d.]+-\d{2}"
 )
 
+Status = Literal["active", "repealed", "partially", "unknown"]
+
+
+class Finding(TypedDict):
+    norm_id: str | None
+    status: Status
+    title: str
+    quote: str
+    position: int
+    occurrences: int
+    since: str | None
+    replaced_by: str | None
+    comment: str | None
+    facts: list[str]
+
 
 @lru_cache
 def load_norms() -> list[dict]:
@@ -28,9 +46,10 @@ def load_norms() -> list[dict]:
     return norms
 
 
-def find_references(text: str) -> list[dict]:
+def find_references(text: str) -> list[Finding]:
     """Находки по тексту в порядке появления: известные акты и неизвестные ссылки."""
-    findings, covered = [], []
+    findings: list[Finding] = []
+    covered: list[tuple[int, int]] = []
     by_title = {n["title"]: n for n in load_norms()}
     for n in load_norms():
         matches = list(n["_re"].finditer(text))
@@ -38,19 +57,19 @@ def find_references(text: str) -> list[dict]:
             continue
         covered += [m.span() for m in matches]
         findings.append(
-            {
-                "norm_id": n["id"],
-                "status": n["status"],
-                "title": n["title"],
-                "quote": matches[0].group(0),
-                "position": matches[0].start(),
-                "occurrences": len(matches),
-                "since": n.get("since"),
-                "replaced_by": n.get("replaced_by"),
-                "comment": n.get("comment"),
+            Finding(
+                norm_id=n["id"],
+                status=n["status"],
+                title=n["title"],
+                quote=matches[0].group(0),
+                position=matches[0].start(),
+                occurrences=len(matches),
+                since=n.get("since"),
+                replaced_by=n.get("replaced_by"),
+                comment=n.get("comment"),
                 # Для отменённого акта — нормы того, что его заменил.
-                "facts": n.get("facts") or by_title.get(n.get("replaced_by"), {}).get("facts", []),
-            }
+                facts=n.get("facts") or by_title.get(n.get("replaced_by"), {}).get("facts", []),
+            )
         )
     seen = set()
     for m in _GENERIC_REFS.finditer(text):
@@ -60,20 +79,23 @@ def find_references(text: str) -> list[dict]:
             continue
         seen.add(ref)
         findings.append(
-            {
-                "norm_id": None,
-                "status": "unknown",
-                "title": ref,
-                "quote": m.group(0),
-                "position": m.start(),
-                "occurrences": 1,
-                "facts": [],
-            }
+            Finding(
+                norm_id=None,
+                status="unknown",
+                title=ref,
+                quote=m.group(0),
+                position=m.start(),
+                occurrences=1,
+                since=None,
+                replaced_by=None,
+                comment=None,
+                facts=[],
+            )
         )
     return sorted(findings, key=lambda f: f["position"])
 
 
-def needs_rewrite(findings: list[dict]) -> bool:
+def needs_rewrite(findings: list[Finding]) -> bool:
     return any(f["status"] in ("repealed", "partially") or f["facts"] for f in findings)
 
 
@@ -87,7 +109,7 @@ SYSTEM_PROMPT = """Вы — юрист-эксперт по делопроизв�
 4. Выведите только полный исправленный текст документа, без пояснений, заголовков «Исправленный текст» и Markdown-разметки."""
 
 
-def _brief(findings: list[dict]) -> str:
+def _brief(findings: list[Finding]) -> str:
     lines = []
     for f in findings:
         if f["status"] == "unknown":
@@ -107,7 +129,7 @@ def _brief(findings: list[dict]) -> str:
     return "\n".join(lines)
 
 
-def build_messages(text: str, findings: list[dict]) -> list[dict]:
+def build_messages(text: str, findings: list[Finding]) -> list[Message]:
     return [
         {"role": "system", "content": SYSTEM_PROMPT},
         {

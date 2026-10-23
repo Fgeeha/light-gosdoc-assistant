@@ -6,6 +6,7 @@ from collections.abc import AsyncIterator
 from pathlib import Path
 from urllib.parse import quote
 
+import httpx
 from fastapi import APIRouter, HTTPException, UploadFile, status
 from fastapi.responses import Response, StreamingResponse
 
@@ -43,7 +44,7 @@ def _stream(events: AsyncIterator[str]) -> StreamingResponse:
     )
 
 
-async def _tokens(messages: list[dict]) -> AsyncIterator[str]:
+async def _tokens(messages: list[llm.Message]) -> AsyncIterator[str]:
     async for delta in llm.stream_chat(messages):
         yield _sse("delta", delta)
 
@@ -61,7 +62,7 @@ async def llm_status(_: CurrentUser) -> dict:
     model = get_settings().llm_model
     try:
         available = await llm.list_models()
-    except Exception as e:
+    except (httpx.HTTPError, ValueError, KeyError) as e:
         return {"model": model, "online": False, "error": e.__class__.__name__}
     return {"model": model, "online": True, "loaded": model in available}
 
@@ -81,9 +82,7 @@ def check(body: CheckIn, _: CurrentUser) -> StreamingResponse:
 
 @router.post("/letter")
 def letter(body: LetterIn, _: CurrentUser) -> StreamingResponse:
-    messages = letters.build_messages(
-        body.incoming, body.organization, body.signer, body.instructions
-    )
+    messages = letters.build_messages(body)
     return _stream(_tokens(messages))
 
 
@@ -116,6 +115,8 @@ async def extract(file: UploadFile, _: CurrentUser) -> dict:
     except ValueError as e:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, str(e)) from e
     except Exception as e:
+        # Парсеры docx/pdf бросают разнородные исключения на повреждённых файлах.
+        logger.warning("Не удалось прочитать файл %s: %r", file.filename, e)
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_ENTITY, "Не удалось прочитать файл"
         ) from e

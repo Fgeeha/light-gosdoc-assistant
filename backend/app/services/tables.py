@@ -4,6 +4,8 @@ import csv
 import io
 import json
 
+from app.llm import Message
+
 MAX_ROWS = 500
 CHUNK_ROWS = 15
 
@@ -51,7 +53,7 @@ def chunks(rows: list[dict]) -> list[list[dict]]:
     return [rows[i : i + CHUNK_ROWS] for i in range(0, len(rows), CHUNK_ROWS)]
 
 
-def build_messages(rows: list[dict], columns: list[str], instructions: str) -> list[dict]:
+def build_messages(rows: list[dict], columns: list[str], instructions: str) -> list[Message]:
     user = (
         f"Целевые колонки: {json.dumps(columns, ensure_ascii=False)}\n"
         f"Инструкция: {instructions or 'нет'}\n\n"

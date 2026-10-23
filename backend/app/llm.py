@@ -3,6 +3,7 @@
 import json
 import re
 from collections.abc import AsyncIterator
+from typing import Literal, TypedDict
 
 import httpx
 
@@ -15,7 +16,19 @@ class LLMError(RuntimeError):
     pass
 
 
-def _request(messages: list[dict], model: str | None, **extra) -> tuple[str, dict, dict]:
+class Message(TypedDict):
+    role: Literal["system", "user", "assistant"]
+    content: str
+
+
+def _endpoint(path: str) -> tuple[str, dict[str, str]]:
+    s = get_settings()
+    return f"{s.llm_base_url.rstrip('/')}/{path}", {"Authorization": f"Bearer {s.llm_api_key}"}
+
+
+def _request(
+    messages: list[Message], model: str | None, **extra
+) -> tuple[str, dict[str, str], dict]:
     s = get_settings()
     body = {
         "model": model or s.llm_model,
@@ -24,8 +37,7 @@ def _request(messages: list[dict], model: str | None, **extra) -> tuple[str, dic
         **s.llm_extra_body,
         **extra,
     }
-    headers = {"Authorization": f"Bearer {s.llm_api_key}"}
-    return f"{s.llm_base_url.rstrip('/')}/chat/completions", body, headers
+    return *_endpoint("chat/completions"), body
 
 
 def _partial_tail(buf: str, tag: str) -> int:
@@ -68,8 +80,8 @@ async def strip_think(chunks: AsyncIterator[str], inside: bool = False) -> Async
         yield buf
 
 
-async def _raw_stream(messages: list[dict], model: str | None) -> AsyncIterator[str]:
-    url, body, headers = _request(messages, model, stream=True)
+async def _raw_stream(messages: list[Message], model: str | None) -> AsyncIterator[str]:
+    url, headers, body = _request(messages, model, stream=True)
     timeout = httpx.Timeout(get_settings().llm_timeout_seconds, connect=10)
     try:
         async with httpx.AsyncClient(timeout=timeout) as client:
@@ -91,11 +103,11 @@ async def _raw_stream(messages: list[dict], model: str | None) -> AsyncIterator[
         raise LLMError(f"Сервер модели недоступен: {e.__class__.__name__}") from e
 
 
-def stream_chat(messages: list[dict], model: str | None = None) -> AsyncIterator[str]:
+def stream_chat(messages: list[Message], model: str | None = None) -> AsyncIterator[str]:
     return strip_think(_raw_stream(messages, model), get_settings().llm_think_prefilled)
 
 
-async def complete_json(messages: list[dict], model: str | None = None) -> dict:
+async def complete_json(messages: list[Message], model: str | None = None) -> dict:
     """Запрос с ответом в виде JSON-объекта."""
     parts = [c async for c in stream_chat(messages, model)]
     return parse_json_object("".join(parts).rsplit(_THINK_CLOSE, 1)[-1])
@@ -116,11 +128,8 @@ def parse_json_object(text: str) -> dict:
 
 
 async def list_models() -> list[str]:
-    s = get_settings()
+    url, headers = _endpoint("models")
     async with httpx.AsyncClient(timeout=5) as client:
-        r = await client.get(
-            f"{s.llm_base_url.rstrip('/')}/models",
-            headers={"Authorization": f"Bearer {s.llm_api_key}"},
-        )
+        r = await client.get(url, headers=headers)
         r.raise_for_status()
         return [m["id"] for m in r.json().get("data", [])]

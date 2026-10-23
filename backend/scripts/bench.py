@@ -2,16 +2,22 @@
 
 Запуск: REPEATS=3 uv run python scripts/bench.py qwen3:14b gemma3:12b ...
 Результаты (среднее по прогонам): bench-results/<дата>/summary.md, results.json, тексты ответов.
+В шапке summary.md — коммит и LLM_EXTRA_BODY, чтобы не смешивать прогоны разных версий.
 """
 
 import asyncio
 import difflib
 import json
+import logging
 import re
+import subprocess
 import sys
 import time
+from collections.abc import Awaitable
 from datetime import datetime
 from pathlib import Path
+
+import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -21,9 +27,14 @@ os.environ.setdefault("SECRET_KEY", "bench" * 8)
 os.environ.setdefault("DATABASE_URL", "sqlite://")
 
 from app import llm  # noqa: E402
+from app.config import get_settings  # noqa: E402
+from app.schemas import LetterIn  # noqa: E402
 from app.services import letters, normcheck, tables  # noqa: E402
 
 EXAMPLES = normcheck.DATA / "examples"
+logger = logging.getLogger("bench")
+# (оценка, замечания, текст ответа, время до первого токена, полное время)
+CaseResult = tuple[float, list[str], str, float, float]
 
 # Эталонные требования к актуализированным документам.
 CHECK_GOLD = {
@@ -56,7 +67,7 @@ def _norm(s: str) -> str:
     return re.sub(r"\s+", " ", s.replace("ё", "е").replace("Ё", "Е")).strip()
 
 
-async def timed_stream(messages: list[dict], model: str) -> tuple[str, float, float]:
+async def timed_stream(messages: list[llm.Message], model: str) -> tuple[str, float, float]:
     start, first, parts = time.perf_counter(), None, []
     async for chunk in llm.stream_chat(messages, model):
         first = first or time.perf_counter()
@@ -139,8 +150,9 @@ async def bench_model(model: str, out_dir: Path) -> dict:
     t = time.perf_counter()
     await llm.complete_json([{"role": "user", "content": 'Ответь {"ok": true}'}], model)
     res["load_seconds"] = round(time.perf_counter() - t, 1)
+    res["vram_gb"] = await ollama_vram_gb(model)
 
-    async def case(kind: str, ex: dict, coro):
+    async def case(kind: str, ex: dict, coro: Awaitable[CaseResult]) -> None:
         try:
             score, fails, out, ttft, total = await coro
         except Exception as e:  # модель сломалась — фиксируем и идём дальше
@@ -158,24 +170,27 @@ async def bench_model(model: str, out_dir: Path) -> dict:
                 "chars": len(out),
             }
         )
-        print(
-            f"  {kind:6} {ex['id']:22} {score:5.0%} {total:6.1f}s  {'; '.join(fails)[:150]}",
-            flush=True,
+        logger.info(
+            "  %-6s %-22s %5.0f%% %6.1fs  %s",
+            kind,
+            ex["id"],
+            score * 100,
+            total,
+            "; ".join(fails)[:150],
         )
 
-    async def check(ex):
+    async def check(ex: dict) -> CaseResult:
         findings = normcheck.find_references(ex["text"])
         out, ttft, total = await timed_stream(normcheck.build_messages(ex["text"], findings), model)
         return (*score_check(ex, out), out, ttft, total)
 
-    async def letter(ex):
-        msgs = letters.build_messages(
-            ex["incoming"], ex["organization"], ex["signer"], ex["instructions"]
-        )
+    async def letter(ex: dict) -> CaseResult:
+        fields = ("incoming", "organization", "signer", "instructions")
+        msgs = letters.build_messages(LetterIn(**{k: ex[k] for k in fields}))
         out, ttft, total = await timed_stream(msgs, model)
         return (*score_letter(ex, out), out, ttft, total)
 
-    async def table(ex):
+    async def table(ex: dict) -> CaseResult:
         rows, total = await run_table(ex, model)
         return (*score_table(ex, rows), json.dumps(rows, ensure_ascii=False, indent=1), 0, total)
 
@@ -198,16 +213,44 @@ async def bench_model(model: str, out_dir: Path) -> dict:
     return res
 
 
+async def ollama_vram_gb(model: str) -> float | None:
+    """Видеопамять, занятая моделью, по /api/ps Ollama; для других серверов — None."""
+    base = get_settings().llm_base_url.rstrip("/").removesuffix("/v1")
+    try:
+        async with httpx.AsyncClient(timeout=5) as client:
+            r = await client.get(f"{base}/api/ps")
+            r.raise_for_status()
+    except httpx.HTTPError:
+        return None
+    sizes = [m.get("size_vram", 0) for m in r.json().get("models", []) if m.get("name") == model]
+    return round(sizes[0] / 1024**3, 1) if sizes else None
+
+
+def run_info(repeats: int) -> str:
+    try:
+        commit = subprocess.run(
+            ["git", "describe", "--always", "--dirty"], capture_output=True, text=True, check=True
+        ).stdout.strip()
+    except (OSError, subprocess.CalledProcessError):
+        commit = "неизвестен"
+    extra = json.dumps(get_settings().llm_extra_body, ensure_ascii=False)
+    return (
+        f"Коммит: {commit}; LLM_EXTRA_BODY: {extra}; прогонов на модель: {repeats}; "
+        f"дата: {datetime.now():%d.%m.%Y %H:%M}"
+    )
+
+
 def summary(results: list[dict]) -> str:
     lines = [
-        "| Модель | Итог | Проверка | Письмо | Таблицы | Проверка, с | Письмо, с | Таблица, с | Симв/с |",
-        "|---|---|---|---|---|---|---|---|---|",
+        "| Модель | Итог | Проверка | Письмо | Таблицы | Проверка, с | Письмо, с | Таблица, с "
+        "| Симв/с | VRAM, ГБ |",
+        "|---|---|---|---|---|---|---|---|---|---|",
     ]
     for r in sorted(results, key=lambda r: -r["overall"]):
         lines.append(
             f"| {r['model']} | **{r['overall']:.0%}** | {r['check']:.0%} | {r['letter']:.0%} | "
             f"{r['table']:.0%} | {r['check_seconds']:.1f} | {r['letter_seconds']:.1f} | "
-            f"{r['table_seconds']:.1f} | {r['chars_per_second']:.0f} |"
+            f"{r['table_seconds']:.1f} | {r['chars_per_second']:.0f} | {r['vram_gb'] or '—'} |"
         )
     return "\n".join(lines)
 
@@ -224,7 +267,14 @@ def average(runs: list[dict]) -> dict:
         "chars_per_second",
     ]
     avg = {k: round(sum(r[k] for r in runs) / len(runs), 3) for k in keys}
-    return {"model": runs[0]["model"], "runs": len(runs), **avg, "details": runs}
+    vram = [r["vram_gb"] for r in runs if r["vram_gb"]]
+    return {
+        "model": runs[0]["model"],
+        "runs": len(runs),
+        **avg,
+        "vram_gb": max(vram) if vram else None,
+        "details": runs,
+    }
 
 
 async def main(models: list[str], repeats: int) -> None:
@@ -233,23 +283,25 @@ async def main(models: list[str], repeats: int) -> None:
     for model in models:
         runs = []
         for i in range(repeats):
-            print(f"== {model}, прогон {i + 1}/{repeats}", flush=True)
+            logger.info("== %s, прогон %d/%d", model, i + 1, repeats)
             run_dir = out_dir / f"run{i + 1}"
             run_dir.mkdir(parents=True, exist_ok=True)
             try:
                 runs.append(await bench_model(model, run_dir))
             except Exception as e:
-                print(f"  пропущена: {e}", flush=True)
+                logger.warning("  пропущена: %s", e)
                 break
         if runs:
             results.append(average(runs))
-        (out_dir / "results.json").write_text(json.dumps(results, ensure_ascii=False, indent=1))
-    table = summary(results)
-    (out_dir / "summary.md").write_text(table + "\n", encoding="utf-8")
-    print(f"\n{table}\n\nРезультаты: {out_dir}")
+        dump = {"info": run_info(repeats), "results": results}
+        (out_dir / "results.json").write_text(json.dumps(dump, ensure_ascii=False, indent=1))
+    report = f"{run_info(repeats)}\n\n{summary(results)}\n"
+    (out_dir / "summary.md").write_text(report, encoding="utf-8")
+    logger.info("\n%s\nРезультаты: %s", report, out_dir)
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(message)s", stream=sys.stdout)
     if len(sys.argv) < 2:
         sys.exit("Укажите модели: scripts/bench.py qwen3:14b gemma3:12b")
     asyncio.run(main(sys.argv[1:], int(os.environ.get("REPEATS", "3"))))

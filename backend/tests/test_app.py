@@ -194,3 +194,12 @@ def test_docx_roundtrip(admin):
         "/api/tools/extract", files={"file": ("a.docx", r.content, "application/octet-stream")}
     )
     assert r.json()["text"] == "Строка 1\nСтрока 2"
+
+
+def test_examples_match_source_documents():
+    import sys
+
+    sys.path.insert(0, str(normcheck.DATA.parent.parent / "scripts"))
+    import build_examples
+
+    assert build_examples.build(write=False) == []

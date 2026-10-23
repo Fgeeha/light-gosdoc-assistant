@@ -1,6 +1,11 @@
 """Подготовка проекта ответа на обращение или запрос."""
 
+from app.llm import Message
+from app.schemas import LetterIn
 from app.services.normcheck import find_references, load_norms
+
+# Законы об обращениях, доступе к информации и архивном деле — нужны почти в любом ответе.
+ALWAYS_CITED_NORMS = frozenset({"fz-59", "fz-8-2009", "fz-125"})
 
 SYSTEM_PROMPT = """Вы — опытный специалист по делопроизводству органа государственной власти (местного самоуправления) Российской Федерации.
 Подготовьте проект официального ответа на входящее обращение.
@@ -19,19 +24,18 @@ def _norms_brief(incoming: str) -> str:
     for n in load_norms():
         if n["status"] != "active":
             continue
-        # Базовые законы об обращениях, архиве и доступе к информации даём всегда.
-        if n["id"] in mentioned or n["id"] in {"fz-59", "fz-8-2009", "fz-125"}:
+        if n["id"] in mentioned or n["id"] in ALWAYS_CITED_NORMS:
             lines.append(f"- {n['title']}")
             lines += [f"  • {fact}" for fact in n.get("facts", [])]
     return "\n".join(lines)
 
 
-def build_messages(incoming: str, organization: str, signer: str, instructions: str) -> list[dict]:
+def build_messages(letter: LetterIn) -> list[Message]:
     user = (
-        f"Действующие нормативные акты:\n{_norms_brief(incoming)}\n\n"
-        f"Орган, от имени которого готовится ответ: {organization or '[заполнить]'}\n"
-        f"Подписант: {signer or '[заполнить]'}\n"
-        f"Позиция и сведения для ответа: {instructions or 'нет, подготовить общий ответ'}\n\n"
-        f"Входящее обращение:\n<<<\n{incoming}\n>>>"
+        f"Действующие нормативные акты:\n{_norms_brief(letter.incoming)}\n\n"
+        f"Орган, от имени которого готовится ответ: {letter.organization or '[заполнить]'}\n"
+        f"Подписант: {letter.signer or '[заполнить]'}\n"
+        f"Позиция и сведения для ответа: {letter.instructions or 'нет, подготовить общий ответ'}\n\n"
+        f"Входящее обращение:\n<<<\n{letter.incoming}\n>>>"
     )
     return [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": user}]

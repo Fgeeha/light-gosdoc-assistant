@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420" role="img" aria-labelledby="title desc">
+  <title id="title">ГосДок Ассистент</title>
+  <desc id="desc">Локальная языковая модель для делопроизводства: проверяет документы по нормативной базе, готовит ответы на обращения и переносит таблицы. Справа фрагмент реального документа с правками: указ Президиума ВС СССР заменён на 59-ФЗ, срок регистрации пять рабочих дней исправлен на три дня, ГОСТ Р 6.30-2003 заменён на ГОСТ Р 7.0.97-2016.</desc>
+
+  <rect width="1200" height="420" rx="24" fill="#1B2B4B"/>
+
+  <g id="title-block" font-family="'Golos Text', 'Segoe UI', -apple-system, Roboto, 'Helvetica Neue', Arial, sans-serif">
+    <text x="56" y="84" font-size="20" fill="#9FB3D9">Локальная языковая модель для делопроизводства</text>
+    <text x="54" y="156" font-size="62" font-weight="700" fill="#FFFFFF" letter-spacing="-1">ГосДок Ассистент</text>
+    <text x="56" y="210" font-size="25" fill="#DCE4F2">Проверяет документы по нормативной базе,</text>
+    <text x="56" y="244" font-size="25" fill="#DCE4F2">готовит ответы на обращения и переносит</text>
+    <text x="56" y="278" font-size="25" fill="#DCE4F2">данные между таблицами.</text>
+
+    <rect x="56" y="318" width="6" height="40" rx="3" fill="#7FBF9F"/>
+    <text x="78" y="335" font-size="20" fill="#FFFFFF">Модель работает на сервере организации —</text>
+    <text x="78" y="360" font-size="20" fill="#FFFFFF">документы никуда не передаются</text>
+  </g>
+
+  <g id="project-proof" transform="translate(688 46) rotate(-1.6 230 170)">
+    <rect x="6" y="10" width="460" height="336" rx="6" fill="#0F1A30" opacity="0.35"/>
+    <rect width="460" height="336" rx="6" fill="#FFFFFF"/>
+
+    <g font-family="'PT Serif', Georgia, 'Times New Roman', serif" font-size="21" fill="#1B2B4B">
+      <text x="32" y="44" font-size="17" fill="#5B6577" letter-spacing="0.5">ПОЛОЖЕНИЕ о работе с обращениями граждан</text>
+      <rect x="32" y="56" width="396" height="1" fill="#D3DAE3"/>
+
+      <text x="32" y="92">1.1. Разработано в соответствии с</text>
+      <text x="32" y="124" fill="#A8261B" textLength="268" lengthAdjust="spacingAndGlyphs">Указом Президиума ВС СССР</text>
+      <rect x="32" y="116" width="268" height="2" fill="#A8261B"/>
+      <rect x="32" y="138" width="292" height="12" fill="#1E6B47" opacity="0.14"/>
+      <text x="32" y="155" fill="#1E6B47" textLength="292" lengthAdjust="spacingAndGlyphs">Федеральным законом № 59-ФЗ</text>
+
+      <text x="32" y="202">2.1. Регистрируется в течение</text>
+      <text x="32" y="234" fill="#A8261B" textLength="128" lengthAdjust="spacingAndGlyphs">пяти рабочих</text>
+      <rect x="32" y="226" width="128" height="2" fill="#A8261B"/>
+      <rect x="170" y="225" width="50" height="12" fill="#1E6B47" opacity="0.14"/>
+      <text x="170" y="234" fill="#1E6B47" textLength="50" lengthAdjust="spacingAndGlyphs">трёх</text>
+      <text x="228" y="234">дней</text>
+
+      <text x="32" y="280">1.2. Оформляется по ГОСТ Р</text>
+      <text x="32" y="312" fill="#A8261B" textLength="100" lengthAdjust="spacingAndGlyphs">6.30-2003</text>
+      <rect x="32" y="304" width="100" height="2" fill="#A8261B"/>
+      <rect x="142" y="303" width="118" height="12" fill="#1E6B47" opacity="0.14"/>
+      <text x="142" y="312" fill="#1E6B47" textLength="118" lengthAdjust="spacingAndGlyphs">7.0.97-2016</text>
+    </g>
+  </g>
+</svg>

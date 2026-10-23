@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="380" viewBox="0 0 1200 380" role="img" aria-labelledby="title desc">
+  <title id="title">Как работает проверка по нормативной базе</title>
+  <desc id="desc">Четыре шага: документ; поиск ссылок по справочнику актов norms.json без участия модели; справка со статусом акта, заменой и ключевыми нормами; языковая модель переписывает текст только по этой справке. Результат: замечания по каждому акту и правки на листе.</desc>
+
+  <rect width="1200" height="380" rx="24" fill="#F4F6F9"/>
+
+  <g font-family="'Golos Text', 'Segoe UI', -apple-system, Roboto, 'Helvetica Neue', Arial, sans-serif">
+    <!-- группы этапов -->
+    <text x="333" y="58" font-size="19" fill="#5B6577">Детерминированно, без модели</text>
+    <rect x="333" y="70" width="534" height="2" fill="#9AA6B8"/>
+    <text x="903" y="58" font-size="19" fill="#2A4FA8">Языковая модель</text>
+    <rect x="903" y="70" width="249" height="2" fill="#2A4FA8"/>
+
+    <!-- шаги -->
+    <g transform="translate(48 92)">
+      <rect width="249" height="150" rx="12" fill="#FFFFFF" stroke="#D3DAE3"/>
+      <text x="24" y="46" font-size="24" font-weight="700" fill="#1B2B4B">Документ</text>
+      <text x="24" y="84" font-size="20" fill="#3A475E">текст, .docx</text>
+      <text x="24" y="112" font-size="20" fill="#3A475E">или .pdf</text>
+    </g>
+    <g transform="translate(333 92)">
+      <rect width="249" height="150" rx="12" fill="#FFFFFF" stroke="#D3DAE3"/>
+      <text x="24" y="46" font-size="24" font-weight="700" fill="#1B2B4B">Поиск ссылок</text>
+      <text x="24" y="84" font-size="20" fill="#3A475E">по справочнику</text>
+      <text x="24" y="112" font-size="20" fill="#3A475E">актов norms.json</text>
+    </g>
+    <g transform="translate(618 92)">
+      <rect width="249" height="150" rx="12" fill="#FFFFFF" stroke="#D3DAE3"/>
+      <text x="24" y="46" font-size="24" font-weight="700" fill="#1B2B4B">Справка</text>
+      <text x="24" y="84" font-size="20" fill="#3A475E">статус, замена,</text>
+      <text x="24" y="112" font-size="20" fill="#3A475E">ключевые нормы</text>
+    </g>
+    <g transform="translate(903 92)">
+      <rect width="249" height="150" rx="12" fill="#1B2B4B"/>
+      <text x="24" y="46" font-size="24" font-weight="700" fill="#FFFFFF">Модель</text>
+      <text x="24" y="84" font-size="20" fill="#DCE4F2">переписывает текст</text>
+      <text x="24" y="112" font-size="20" fill="#DCE4F2">только по справке</text>
+    </g>
+
+    <!-- стрелки -->
+    <g fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M303 167 h22 M317 159 l8 8 l-8 8" stroke="#9AA6B8"/>
+      <path d="M588 167 h22 M602 159 l8 8 l-8 8" stroke="#9AA6B8"/>
+      <path d="M873 167 h22 M887 159 l8 8 l-8 8" stroke="#2A4FA8"/>
+    </g>
+
+    <!-- результат -->
+    <g transform="translate(48 270)">
+      <rect width="1104" height="72" rx="12" fill="#FFFFFF" stroke="#D3DAE3"/>
+      <text x="28" y="45" font-size="21" fill="#1B2B4B">Результат: замечание по каждому акту и правки на листе —</text>
+      <text x="640" y="45" font-size="21" fill="#A8261B" text-decoration="line-through">удалено</text>
+      <text x="740" y="45" font-size="21" fill="#1B2B4B">/</text>
+      <rect x="760" y="33" width="112" height="14" fill="#1E6B47" opacity="0.14"/>
+      <text x="760" y="45" font-size="21" fill="#1E6B47">добавлено</text>
+    </g>
+  </g>
+</svg>

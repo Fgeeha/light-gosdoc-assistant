@@ -78,14 +78,28 @@ function Redline({ before, after }: { before: string; after: string }) {
   );
 }
 
+type View = "redline" | "clean" | "reference";
+const VIEWS: { id: View; label: string }[] = [
+  { id: "redline", label: "С правками" },
+  { id: "clean", label: "Чистовик" },
+  { id: "reference", label: "Эталон юриста" },
+];
+
 export default function Check() {
   const examples = useExamples();
   const [text, setText] = useState("");
   const [checked, setChecked] = useState("");
   const [findings, setFindings] = useState<Finding[] | null>(null);
   const [result, setResult] = useState("");
-  const [view, setView] = useState<"redline" | "clean">("redline");
+  const [selectedView, setView] = useState<View>("redline");
+  const [sampleId, setSampleId] = useState<string | null>(null);
   const { run, running, error } = useStream();
+
+  const sample = examples?.check.find((x) => x.id === sampleId);
+  // Эталон показываем, только если проверяли текст образца без изменений.
+  const reference = sample && checked === sample.text ? sample.expected : null;
+  const views = VIEWS.filter((v) => v.id !== "reference" || reference);
+  const view = views.some((v) => v.id === selectedView) ? selectedView : "redline";
 
   const issues = findings?.filter((f) => f.status !== "active") ?? [];
   const actual = findings?.filter((f) => f.status === "active") ?? [];
@@ -109,7 +123,13 @@ export default function Check() {
       />
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
         <section>
-          <Samples items={examples?.check} onPick={(x) => setText(x.text)} />
+          <Samples
+            items={examples?.check}
+            onPick={(x) => {
+              setText(x.text);
+              setSampleId(x.id);
+            }}
+          />
           <textarea
             aria-label="Текст документа"
             className="sheet block min-h-[520px] w-full resize-y p-8 focus:outline-none focus:ring-2 focus:ring-seal/25"
@@ -118,7 +138,14 @@ export default function Check() {
             onChange={(e) => setText(e.target.value)}
           />
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-            <UploadButton onText={setText} />
+            <div className="flex flex-wrap items-center gap-3">
+              <UploadButton onText={setText} />
+              {sample && (
+                <a className="text-sm text-seal hover:underline" href={`/api/tools/examples/docs/check/${sample.id}.docx`} download>
+                  Исходный документ образца (.docx)
+                </a>
+              )}
+            </div>
             <Button onClick={check} disabled={!text.trim() || running}>
               {running && <Spinner />}
               {running ? "Проверяю…" : "Проверить"}
@@ -151,15 +178,15 @@ export default function Check() {
                 <div className="mt-6">
                   <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                     <div role="tablist" className="inline-flex rounded-md border border-line bg-white p-0.5 text-[13px]">
-                      {(["redline", "clean"] as const).map((v) => (
+                      {views.map((v) => (
                         <button
-                          key={v}
+                          key={v.id}
                           role="tab"
-                          aria-selected={view === v}
-                          onClick={() => setView(v)}
-                          className={`rounded px-3 py-1 ${view === v ? "bg-ink text-white" : "text-ink hover:bg-desk"}`}
+                          aria-selected={view === v.id}
+                          onClick={() => setView(v.id)}
+                          className={`rounded px-3 py-1 ${view === v.id ? "bg-ink text-white" : "text-ink hover:bg-desk"}`}
                         >
-                          {v === "redline" ? "С правками" : "Чистовик"}
+                          {v.label}
                         </button>
                       ))}
                     </div>
@@ -175,6 +202,8 @@ export default function Check() {
                   <div className="sheet whitespace-pre-wrap p-8">
                     {running || view === "clean" ? (
                       <span className={running ? "caret" : ""}>{result.trimStart()}</span>
+                    ) : view === "reference" && reference ? (
+                      <Redline before={checked.trim()} after={reference} />
                     ) : (
                       <Redline before={checked.trim()} after={corrected} />
                     )}
@@ -182,6 +211,11 @@ export default function Check() {
                   {!running && view === "redline" && (
                     <p className="mt-2 text-[13px] text-muted">
                       <del className="edit">Зачёркнуто</del> — удалено, <ins className="edit">выделено зелёным</ins> — добавлено моделью. Проверьте правки перед использованием.
+                    </p>
+                  )}
+                  {!running && view === "reference" && (
+                    <p className="mt-2 text-[13px] text-muted">
+                      Редакция, заранее подготовленная вручную для этого образца, — для сравнения с правками модели.
                     </p>
                   )}
                 </div>

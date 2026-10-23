@@ -23,7 +23,7 @@ export type Finding = {
 
 type Example = { id: string; title: string; description: string };
 export type Examples = {
-  check: (Example & { text: string })[];
+  check: (Example & { text: string; expected: string })[];
   letters: (Example & { incoming: string; organization: string; signer: string; instructions: string })[];
   tables: (Example & { source: string; columns: string[]; instructions: string })[];
 };
@@ -47,14 +47,21 @@ async function errorFrom(r: Response): Promise<ApiError> {
   return new ApiError(r.status, message);
 }
 
-export async function api<T>(path: string, init: RequestInit & { json?: unknown } = {}): Promise<T> {
-  const { json, ...rest } = init;
+type RequestOptions = RequestInit & { json?: unknown };
+
+/** Единая точка запросов к API: JSON-тело и разбор ошибок. */
+async function request(path: string, { json, ...init }: RequestOptions = {}): Promise<Response> {
   const r = await fetch(`/api${path}`, {
-    ...rest,
-    headers: json === undefined ? rest.headers : { "Content-Type": "application/json" },
-    body: json === undefined ? rest.body : JSON.stringify(json),
+    ...init,
+    headers: json === undefined ? init.headers : { "Content-Type": "application/json" },
+    body: json === undefined ? init.body : JSON.stringify(json),
   });
   if (!r.ok) throw await errorFrom(r);
+  return r;
+}
+
+export async function api<T>(path: string, init: RequestOptions = {}): Promise<T> {
+  const r = await request(path, init);
   return (r.status === 204 ? undefined : await r.json()) as T;
 }
 
@@ -65,13 +72,8 @@ async function stream(
   onEvent: (event: string, data: any) => void,
   signal: AbortSignal,
 ) {
-  const r = await fetch(`/api${path}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-    signal,
-  });
-  if (!r.ok || !r.body) throw await errorFrom(r);
+  const r = await request(path, { method: "POST", json: body, signal });
+  if (!r.body) throw new ApiError(r.status, "Пустой ответ сервера");
   const reader = r.body.pipeThrough(new TextDecoderStream()).getReader();
   let buf = "";
   for (;;) {
@@ -137,12 +139,7 @@ function saveBlob(blob: Blob, filename: string) {
 }
 
 export async function downloadDocx(text: string, filename: string) {
-  const r = await fetch("/api/tools/docx", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text, filename }),
-  });
-  if (!r.ok) throw await errorFrom(r);
+  const r = await request("/tools/docx", { method: "POST", json: { text, filename } });
   saveBlob(await r.blob(), `${filename}.docx`);
 }
 

@@ -203,3 +203,10 @@ def test_examples_match_source_documents():
     import build_examples
 
     assert build_examples.build(write=False) == []
+
+
+def test_example_docs_download(admin):
+    r = admin.get("/api/tools/examples/docs/check/appeals-regulation.docx")
+    assert r.status_code == 200 and r.content[:2] == b"PK"
+    assert admin.get("/api/tools/examples/docs/check/..%2F..%2Fnorms.json").status_code == 404
+    assert admin.get("/api/tools/examples/docs/../norms.json").status_code == 404

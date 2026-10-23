@@ -5,9 +5,12 @@ SHELL := /bin/bash
 COMPOSE ?= docker compose
 DC := $(COMPOSE) --env-file .env -f docker/docker-compose.yml
 MODELS ?= qwen3:14b
+# Переменные из .env для запуска вне Docker: сервер модели на хосте виден как localhost.
+HOST_ENV := set -a && . ../.env && set +a && \
+  export LLM_BASE_URL=$${LLM_BASE_URL/host.docker.internal/localhost}
 
 .PHONY: help install run run-frontend lint format test check \
-        up-local down-local up-prod down-prod logs bench clean
+        bench examples up-local down-local up-prod down-prod logs clean
 
 help: ## Показать список целей
 	@grep -hE '^[a-zA-Z0-9_-]+:.*## ' $(MAKEFILE_LIST) \
@@ -22,9 +25,7 @@ install: ## Установить зависимости бэкенда и фро
 # --- Запуск -----------------------------------------------------------------
 
 run: ## Запустить бэкенд локально (SQLite, переменные из .env)
-	cd backend && set -a && . ../.env && set +a && \
-	  DATABASE_URL=sqlite:///./dev.db LLM_BASE_URL=$${LLM_BASE_URL/host.docker.internal/localhost} \
-	  uv run uvicorn app.main:app --reload
+	cd backend && $(HOST_ENV) && DATABASE_URL=sqlite:///./dev.db uv run uvicorn app.main:app --reload
 
 run-frontend: ## Запустить фронтенд в режиме разработки (прокси /api на :8000)
 	cd frontend && npm run dev
@@ -44,9 +45,10 @@ test: ## Прогнать тесты бэкенда
 check: lint test ## Линт и тесты
 
 bench: ## Сравнить модели на демо-сценариях: make bench MODELS="qwen3:14b gemma3:12b"
-	cd backend && set -a && . ../.env && set +a && \
-	  LLM_BASE_URL=$${LLM_BASE_URL/host.docker.internal/localhost} \
-	  uv run python scripts/bench.py $(MODELS)
+	cd backend && $(HOST_ENV) && uv run python scripts/bench.py $(MODELS)
+
+examples: ## Пересобрать тексты образцов из документов в examples/docs
+	cd backend && uv run python scripts/build_examples.py
 
 # --- Docker -----------------------------------------------------------------
 
@@ -60,8 +62,7 @@ up-prod: ## Скачать образы из реестра и запустит�
 	$(DC) pull db backend frontend
 	$(DC) up -d --no-build
 
-down-prod: ## Остановить продуктивный стенд
-	$(DC) down
+down-prod: down-local ## Остановить продуктивный стенд
 
 logs: ## Логи сервисов
 	$(DC) logs -f --tail=200

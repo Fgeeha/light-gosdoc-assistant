@@ -8,7 +8,7 @@ from urllib.parse import quote
 
 import httpx
 from fastapi import APIRouter, HTTPException, UploadFile, status
-from fastapi.responses import Response, StreamingResponse
+from fastapi.responses import FileResponse, Response, StreamingResponse
 
 from app import llm
 from app.config import get_settings
@@ -55,6 +55,16 @@ def examples(_: CurrentUser) -> dict:
         kind: json.loads((EXAMPLES / f"{kind}.json").read_text(encoding="utf-8"))
         for kind in ("check", "letters", "tables")
     }
+
+
+@router.get("/examples/docs/{kind}/{name}")
+def example_doc(kind: str, name: str, _: CurrentUser) -> FileResponse:
+    """Исходный документ образца — тот, из которого разобран текст."""
+    docs = (EXAMPLES / "docs").resolve()
+    path = (docs / kind / name).resolve()
+    if path.parent.parent != docs or not path.is_file():
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Документ не найден")
+    return FileResponse(path, filename=name)
 
 
 @router.get("/status")

@@ -5,13 +5,13 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field
 
 Username = Field(min_length=3, max_length=64, pattern=r"^[A-Za-z0-9._-]+$")
-# bcrypt учитывает не более 72 байт.
+# Лимит в байтах дополнительно проверяется в security.hash_password.
 Password = Field(min_length=8, max_length=72)
 
 
 class LoginIn(BaseModel):
-    username: str
-    password: str
+    username: str = Field(max_length=64)
+    password: str = Field(max_length=200)
 
 
 class UserOut(BaseModel):

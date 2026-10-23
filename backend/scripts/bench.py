@@ -1,7 +1,7 @@
 """Сравнение моделей на демо-сценариях теми же промптами, что и в приложении.
 
-Запуск: uv run python scripts/bench.py qwen3:14b gemma3:12b ...
-Результаты: bench-results/<дата>/summary.md, results.json и тексты ответов.
+Запуск: REPEATS=3 uv run python scripts/bench.py qwen3:14b gemma3:12b ...
+Результаты (среднее по прогонам): bench-results/<дата>/summary.md, results.json, тексты ответов.
 """
 
 import asyncio
@@ -80,7 +80,7 @@ def score_check(ex: dict, out: str) -> tuple[float, list[str]]:
         if not re.search(pattern, out):
             fails.append(f"не применена норма /{pattern}/")
     total += 1
-    ratio = difflib.SequenceMatcher(None, ex["text"], out).ratio()
+    ratio = difflib.SequenceMatcher(None, _norm(ex["text"]), _norm(out), autojunk=False).ratio()
     if ratio < 0.6:
         fails.append(f"текст переписан слишком сильно (сходство {ratio:.2f})")
     total += 1
@@ -158,7 +158,10 @@ async def bench_model(model: str, out_dir: Path) -> dict:
                 "chars": len(out),
             }
         )
-        print(f"  {kind:6} {ex['id']:22} {score:5.0%} {total:6.1f}s  {'; '.join(fails)[:150]}")
+        print(
+            f"  {kind:6} {ex['id']:22} {score:5.0%} {total:6.1f}s  {'; '.join(fails)[:150]}",
+            flush=True,
+        )
 
     async def check(ex):
         findings = normcheck.find_references(ex["text"])
@@ -209,16 +212,37 @@ def summary(results: list[dict]) -> str:
     return "\n".join(lines)
 
 
-async def main(models: list[str]) -> None:
+def average(runs: list[dict]) -> dict:
+    keys = [
+        "check",
+        "letter",
+        "table",
+        "overall",
+        "check_seconds",
+        "letter_seconds",
+        "table_seconds",
+        "chars_per_second",
+    ]
+    avg = {k: round(sum(r[k] for r in runs) / len(runs), 3) for k in keys}
+    return {"model": runs[0]["model"], "runs": len(runs), **avg, "details": runs}
+
+
+async def main(models: list[str], repeats: int) -> None:
     out_dir = Path("bench-results") / datetime.now().strftime("%Y%m%d-%H%M%S")
-    out_dir.mkdir(parents=True)
     results = []
     for model in models:
-        print(f"== {model}")
-        try:
-            results.append(await bench_model(model, out_dir))
-        except Exception as e:
-            print(f"  пропущена: {e}")
+        runs = []
+        for i in range(repeats):
+            print(f"== {model}, прогон {i + 1}/{repeats}", flush=True)
+            run_dir = out_dir / f"run{i + 1}"
+            run_dir.mkdir(parents=True, exist_ok=True)
+            try:
+                runs.append(await bench_model(model, run_dir))
+            except Exception as e:
+                print(f"  пропущена: {e}", flush=True)
+                break
+        if runs:
+            results.append(average(runs))
         (out_dir / "results.json").write_text(json.dumps(results, ensure_ascii=False, indent=1))
     table = summary(results)
     (out_dir / "summary.md").write_text(table + "\n", encoding="utf-8")
@@ -228,4 +252,4 @@ async def main(models: list[str]) -> None:
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         sys.exit("Укажите модели: scripts/bench.py qwen3:14b gemma3:12b")
-    asyncio.run(main(sys.argv[1:]))
+    asyncio.run(main(sys.argv[1:], int(os.environ.get("REPEATS", "3"))))

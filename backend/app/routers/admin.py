@@ -46,6 +46,7 @@ def update_user(user_id: int, body: UserUpdate, admin: AdminUser, db: DB) -> Use
         user.full_name = body.full_name.strip()
     if body.password is not None:
         user.password_hash = hash_password(body.password)
+        user.token_version += 1
     if body.is_admin is not None:
         user.is_admin = body.is_admin
     if body.is_active is not None:

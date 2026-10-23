@@ -11,7 +11,7 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 @router.post("/login", response_model=UserOut)
 def login(body: LoginIn, response: Response, db: DB) -> User:
     user = db.scalar(select(User).where(User.username == body.username.strip()))
-    if user is None or not verify_password(body.password, user.password_hash):
+    if not verify_password(body.password, user.password_hash if user else None) or user is None:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Неверный логин или пароль")
     if not user.is_active:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Учётная запись заблокирована")
@@ -20,7 +20,9 @@ def login(body: LoginIn, response: Response, db: DB) -> User:
 
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
-def logout(response: Response) -> None:
+def logout(user: CurrentUser, response: Response, db: DB) -> None:
+    user.token_version += 1
+    db.commit()
     response.delete_cookie(COOKIE_NAME)
 
 

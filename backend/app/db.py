@@ -30,6 +30,8 @@ class User(Base):
     password_hash: Mapped[str] = mapped_column(String(100))
     is_admin: Mapped[bool] = mapped_column(default=False)
     is_active: Mapped[bool] = mapped_column(default=True)
+    # Увеличивается при смене пароля и выходе — старые сессии перестают действовать.
+    token_version: Mapped[int] = mapped_column(default=0)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(UTC)
     )

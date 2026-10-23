@@ -1,11 +1,12 @@
 import asyncio
 import json
 
+import pytest
 from fastapi.testclient import TestClient
 
 from app import llm
 from app.main import app
-from app.services import normcheck, tables
+from app.services import files, normcheck, tables
 
 
 def _events(body: str) -> list[tuple[str, object]]:
@@ -100,6 +101,57 @@ def test_strip_think_across_chunk_boundaries():
         return "".join([c async for c in llm.strip_think(gen())])
 
     assert asyncio.run(collect()) == "Ответ <b> готов"
+
+    async def orphan():
+        for c in ["</th", "ink>\n\nТекст"]:
+            yield c
+
+    async def collect_orphan():
+        return "".join([c async for c in llm.strip_think(orphan())])
+
+    assert asyncio.run(collect_orphan()) == "\n\nТекст"
+
+
+def test_strip_think_prefilled_template_hides_reasoning():
+    async def gen():
+        for c in ["Пользователь просит ", "проверить {draft}", "</think>", '{"rows": []}']:
+            yield c
+
+    async def collect():
+        return "".join([c async for c in llm.strip_think(gen(), inside=True)])
+
+    assert asyncio.run(collect()) == '{"rows": []}'
+
+
+def test_long_cyrillic_password_is_rejected_not_500(admin):
+    r = admin.post("/api/admin/users", json={"username": "longpass", "password": "ж" * 40})
+    assert r.status_code == 422
+    r = admin.post("/api/auth/login", json={"username": "admin", "password": "ж" * 100})
+    assert r.status_code == 401
+
+
+def test_logout_revokes_session(client):
+    with TestClient(app) as c:
+        c.post("/api/auth/login", json={"username": "admin", "password": "admin-password"})
+        token = c.cookies.get("gosdoc_session")
+        assert c.post("/api/auth/logout").status_code == 204
+        c.cookies.set("gosdoc_session", token)
+        assert c.get("/api/auth/me").status_code == 401
+
+
+def test_parse_table_rejects_ambiguous_headers():
+    with pytest.raises(ValueError):
+        tables.parse_table("a;a\n1;2")
+    with pytest.raises(ValueError):
+        tables.parse_table("a;b\n1;2;3")
+
+
+def test_docx_strips_control_chars():
+    assert files.to_docx("стр\x00ока\x07")
+
+
+def test_parse_json_object_tolerates_trailing_text():
+    assert llm.parse_json_object('```json\n{"rows": []}\n```\nПояснение: {x}') == {"rows": []}
 
 
 def test_parse_table_detects_delimiters():

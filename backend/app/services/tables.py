@@ -26,14 +26,20 @@ def parse_table(text: str) -> tuple[list[str], list[dict]]:
     try:
         dialect = csv.Sniffer().sniff(sample, delimiters="\t;,|")
     except csv.Error:
-        dialect = csv.excel_tab if "\t" in sample else csv.excel
-    reader = csv.reader(io.StringIO(text), dialect)
+        # Sniffer не справляется с рваными строками — берём самый частый разделитель заголовка.
+        first = sample.split("\n", 1)[0]
+        dialect = csv.excel
+        dialect_args = {"delimiter": max("\t;,|", key=first.count)}
+    else:
+        dialect_args = {}
+    reader = csv.reader(io.StringIO(text), dialect, **dialect_args)
     header = [h.strip() for h in next(reader)]
-    rows = [
-        dict(zip(header, (c.strip() for c in r), strict=False))
-        for r in reader
-        if any(c.strip() for c in r)
-    ]
+    if not all(header) or len(set(header)) != len(header):
+        raise ValueError("Заголовки колонок должны быть непустыми и не повторяться")
+    raw = [r for r in reader if any(c.strip() for c in r)]
+    if any(len(r) > len(header) for r in raw):
+        raise ValueError("В некоторых строках больше значений, чем колонок в заголовке")
+    rows = [dict(zip(header, (c.strip() for c in r), strict=False)) for r in raw]
     if not rows:
         raise ValueError("В таблице нет строк с данными")
     if len(rows) > MAX_ROWS:

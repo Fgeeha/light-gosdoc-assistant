@@ -36,9 +36,9 @@ def _partial_tail(buf: str, tag: str) -> int:
     return 0
 
 
-async def strip_think(chunks: AsyncIterator[str]) -> AsyncIterator[str]:
+async def strip_think(chunks: AsyncIterator[str], inside: bool = False) -> AsyncIterator[str]:
     """Вырезает рассуждения <think>…</think> из потока reasoning-моделей."""
-    buf, inside = "", False
+    buf = ""
     async for chunk in chunks:
         buf += chunk
         while True:
@@ -50,8 +50,13 @@ async def strip_think(chunks: AsyncIterator[str]) -> AsyncIterator[str]:
                 buf, inside = buf[end + len(_THINK_CLOSE) :], False
             else:
                 start = buf.find(_THINK_OPEN)
+                # Шаблоны некоторых моделей открывают <think> сами — в ответ попадает только </think>.
+                orphan = buf.find(_THINK_CLOSE)
+                if orphan >= 0 and (start < 0 or orphan < start):
+                    buf = buf[orphan + len(_THINK_CLOSE) :]
+                    continue
                 if start < 0:
-                    keep = _partial_tail(buf, _THINK_OPEN)
+                    keep = max(_partial_tail(buf, _THINK_OPEN), _partial_tail(buf, _THINK_CLOSE))
                     if len(buf) > keep:
                         yield buf[: len(buf) - keep]
                         buf = buf[len(buf) - keep :]
@@ -87,22 +92,23 @@ async def _raw_stream(messages: list[dict], model: str | None) -> AsyncIterator[
 
 
 def stream_chat(messages: list[dict], model: str | None = None) -> AsyncIterator[str]:
-    return strip_think(_raw_stream(messages, model))
+    return strip_think(_raw_stream(messages, model), get_settings().llm_think_prefilled)
 
 
 async def complete_json(messages: list[dict], model: str | None = None) -> dict:
     """Запрос с ответом в виде JSON-объекта."""
     parts = [c async for c in stream_chat(messages, model)]
-    return parse_json_object("".join(parts))
+    return parse_json_object("".join(parts).rsplit(_THINK_CLOSE, 1)[-1])
 
 
 def parse_json_object(text: str) -> dict:
     text = re.sub(r"^```(?:json)?|```$", "", text.strip(), flags=re.M).strip()
-    start, end = text.find("{"), text.rfind("}")
-    if start < 0 or end < start:
+    start = text.find("{")
+    if start < 0:
         raise LLMError("Модель не вернула JSON")
     try:
-        return json.loads(text[start : end + 1])
+        # raw_decode: модели иногда дописывают пояснения после объекта.
+        return json.JSONDecoder().raw_decode(text, start)[0]
     except json.JSONDecodeError as e:
         raise LLMError(f"Модель вернула некорректный JSON: {e.msg}") from e
 

@@ -24,6 +24,8 @@ class Settings(BaseSettings):
     llm_model: str = "qwen3:14b"
     llm_temperature: float = 0.2
     llm_timeout_seconds: float = 600
+    # true, если шаблон модели сам открывает <think> и в ответ приходит только «…</think>ответ».
+    llm_think_prefilled: bool = False
     # Дополнительные поля тела запроса, например {"reasoning_effort": "none"}.
     llm_extra_body: dict = {}
 

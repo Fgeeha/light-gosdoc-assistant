@@ -100,12 +100,12 @@ export default function Check() {
   const reference = sample && checked === sample.text ? sample.expected : null;
   const views = VIEWS.filter((v) => v.id !== "reference" || reference);
   const view = views.some((v) => v.id === selectedView) ? selectedView : "redline";
-  // Копируется и скачивается то, что сейчас на экране.
-  const shown = view === "reference" && reference ? reference : corrected;
 
   const issues = findings?.filter((f) => f.status !== "active") ?? [];
   const actual = findings?.filter((f) => f.status === "active") ?? [];
   const corrected = result.trim();
+  // Копируется и скачивается то, что сейчас на экране.
+  const shown = view === "reference" && reference ? reference : corrected;
 
   function check() {
     setChecked(text);

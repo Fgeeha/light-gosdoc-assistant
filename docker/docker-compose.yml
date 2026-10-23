@@ -1,0 +1,62 @@
+# Запуск: make up-local (сборка из исходников) или make up-prod (образы из GHCR).
+name: gosdoc
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-gosdoc}
+      POSTGRES_USER: ${POSTGRES_USER:-gosdoc}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?задайте POSTGRES_PASSWORD в .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      retries: 10
+    restart: unless-stopped
+
+  backend:
+    image: ${IMAGE_PREFIX:-ghcr.io/fgeeha/light-gosdoc-assistant}-backend:${TAG:-latest}
+    build: ../backend
+    env_file: ../.env
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-gosdoc}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-gosdoc}
+    depends_on:
+      db:
+        condition: service_healthy
+    # Доступ к Ollama/vLLM, запущенным на хосте: LLM_BASE_URL=http://host.docker.internal:11434/v1
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  frontend:
+    image: ${IMAGE_PREFIX:-ghcr.io/fgeeha/light-gosdoc-assistant}-frontend:${TAG:-latest}
+    build: ../frontend
+    ports:
+      - "${HTTP_PORT:-8080}:8080"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  # Модель в контейнере на GPU: COMPOSE_PROFILES=ollama и LLM_BASE_URL=http://ollama:11434/v1
+  ollama:
+    image: ollama/ollama:0.31.2
+    profiles: ["ollama"]
+    volumes:
+      - ollama:/root/.ollama
+    environment:
+      OLLAMA_KEEP_ALIVE: 24h
+      OLLAMA_CONTEXT_LENGTH: "16384"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  ollama:

@@ -1,0 +1,73 @@
+@import "@fontsource/golos-text/400.css";
+@import "@fontsource/golos-text/500.css";
+@import "@fontsource/golos-text/600.css";
+@import "@fontsource/pt-serif/400.css";
+@import "@fontsource/pt-serif/700.css";
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Golos Text", system-ui, sans-serif;
+  --font-serif: "PT Serif", Georgia, serif;
+  --color-desk: #e8ecf1;
+  --color-ink: #1b2b4b;
+  --color-ink-soft: #2c3e63;
+  --color-seal: #2a4fa8;
+  --color-del: #a8261b;
+  --color-ins: #1e6b47;
+  --color-amber: #9a5b00;
+  --color-muted: #5b6577;
+  --color-line: #d3dae3;
+}
+
+body {
+  @apply bg-desk text-ink font-sans antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-seal);
+  outline-offset: 2px;
+}
+
+/* Лист документа: бумага с полями, как в редакторе. */
+.sheet {
+  @apply bg-white rounded-sm border border-line font-serif text-[15px] leading-[1.65] text-ink;
+  box-shadow: 0 1px 0 #c9d1dc, 0 8px 24px -12px rgb(27 43 75 / 0.25);
+}
+
+.field {
+  @apply w-full rounded-md border border-line bg-white px-3 py-2 text-sm text-ink placeholder:text-muted/70;
+  @apply focus:border-seal focus:outline-none focus:ring-2 focus:ring-seal/20;
+}
+
+ins.edit {
+  @apply text-ins no-underline;
+  background: linear-gradient(transparent 60%, rgb(30 107 71 / 0.14) 60%);
+}
+
+del.edit {
+  @apply text-del;
+  text-decoration-thickness: 1.5px;
+}
+
+.caret::after {
+  content: "";
+  display: inline-block;
+  width: 0.5em;
+  height: 1.1em;
+  margin-left: 1px;
+  vertical-align: text-bottom;
+  background: var(--color-seal);
+  animation: blink 1s steps(2) infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .caret::after {
+    animation: none;
+  }
+}

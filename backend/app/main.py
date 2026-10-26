@@ -7,7 +7,7 @@ from sqlalchemy import func, select
 
 from app.config import get_settings
 from app.db import SessionLocal, User, init_db
-from app.routers import admin, auth, tools
+from app.routers import admin, auth, norms, tools
 from app.security import hash_password
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -49,6 +49,7 @@ app = FastAPI(
 )
 app.include_router(auth.router)
 app.include_router(admin.router)
+app.include_router(norms.router)
 app.include_router(tools.router)
 
 

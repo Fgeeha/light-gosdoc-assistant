@@ -8,6 +8,7 @@ import Admin from "./pages/Admin";
 import Check from "./pages/Check";
 import Letter from "./pages/Letter";
 import Login from "./pages/Login";
+import Norms from "./pages/Norms";
 import Table from "./pages/Table";
 import { Spinner } from "./ui";
 
@@ -36,6 +37,7 @@ function App() {
         <Route path="/check" element={<Check />} />
         <Route path="/letter" element={<Letter />} />
         <Route path="/table" element={<Table />} />
+        {user.is_admin && <Route path="/norms" element={<Norms />} />}
         {user.is_admin && <Route path="/admin" element={<Admin me={user} />} />}
         <Route path="*" element={<Navigate to="/check" replace />} />
       </Route>

@@ -44,7 +44,9 @@ function ModelStatus() {
 }
 
 export default function Layout({ user, onLogout }: { user: User; onLogout: () => void }) {
-  const items = user.is_admin ? [...NAV, { to: "/admin", label: "Пользователи" }] : NAV;
+  const items = user.is_admin
+    ? [...NAV, { to: "/norms", label: "Справочник" }, { to: "/admin", label: "Пользователи" }]
+    : NAV;
   return (
     <div className="min-h-dvh lg:grid lg:grid-cols-[264px_1fr]">
       <aside className="bg-ink text-white lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col">

@@ -21,6 +21,17 @@ export type Finding = {
   facts: string[];
 };
 
+export type Norm = {
+  id: string;
+  title: string;
+  status: "active" | "repealed" | "partially";
+  since?: string | null;
+  replaced_by?: string | null;
+  facts_count: number;
+};
+
+export type NormUpdate = { norm_id: string; date: string; name: string; url: string };
+
 type Example = { id: string; title: string; description: string };
 export type Examples = {
   check: (Example & { text: string; expected: string })[];

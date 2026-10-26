@@ -210,3 +210,36 @@ def test_example_docs_download(admin):
     assert r.status_code == 200 and r.content[:2] == b"PK"
     assert admin.get("/api/tools/examples/docs/check/..%2F..%2Fnorms.json").status_code == 404
     assert admin.get("/api/tools/examples/docs/../norms.json").status_code == 404
+
+
+def test_admin_norms_list_and_updates(admin, monkeypatch):
+    norms = admin.get("/api/admin/norms").json()
+    assert len(norms) == 19
+    fz59 = next(n for n in norms if n["id"] == "fz-59")
+    assert fz59["status"] == "active" and fz59["facts_count"] >= 1
+    ukaz = next(n for n in norms if n["id"] == "ukaz-1968-2534")
+    assert ukaz["status"] == "repealed" and ukaz["replaced_by"].startswith("Федеральный закон")
+
+    from app.routers import norms as norms_router
+
+    monkeypatch.setattr(
+        norms_router.sources,
+        "fetch_pravo_changes",
+        lambda *a, **k: [
+            {
+                "norm_id": "fz-44",
+                "date": "2026-08-04",
+                "name": "ФЗ № 279-ФЗ о внесении изменений",
+                "url": "http://x/1",
+            }
+        ],
+    )
+    updates = admin.get("/api/admin/norms/updates?days=90").json()
+    assert updates == [
+        {
+            "norm_id": "fz-44",
+            "date": "2026-08-04",
+            "name": "ФЗ № 279-ФЗ о внесении изменений",
+            "url": "http://x/1",
+        }
+    ]

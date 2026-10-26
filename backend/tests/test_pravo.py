@@ -5,9 +5,8 @@ from pathlib import Path
 import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
-import pravo_sync  # noqa: E402
 
-from app.services import normcheck  # noqa: E402
+from app.services import sources  # noqa: E402
 
 
 def _page(items):
@@ -52,7 +51,7 @@ def test_fetch_changes_matches_tracked_acts_and_stops_by_date():
         ],
     }
     api = httpx.Client(base_url="http://x", transport=httpx.MockTransport(make_handler(pages)))
-    hits = pravo_sync.fetch_changes(api, ("president",), date(2026, 10, 1), normcheck.load_norms())
+    hits = sources.fetch_pravo_changes(api, date(2026, 10, 1), ("president",))
     ids = [(h["norm_id"], h["date"]) for h in hits]
     assert ("fz-59", "2026-10-20") in ids
     assert ("fz-152", "2026-10-15") in ids
@@ -76,5 +75,5 @@ def test_change_keyword_filter_skips_primary_publications():
         ]
     }
     api = httpx.Client(base_url="http://x", transport=httpx.MockTransport(make_handler(pages)))
-    hits = pravo_sync.fetch_changes(api, ("president",), date(2026, 10, 1), normcheck.load_norms())
+    hits = sources.fetch_pravo_changes(api, date(2026, 10, 1), ("president",))
     assert hits == []  # первичная публикация без слов об изменении не попадает в отчёт

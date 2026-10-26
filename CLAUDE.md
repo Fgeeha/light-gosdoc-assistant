@@ -61,7 +61,7 @@ deterministically by regex against `app/data/norms.json` (status, repeal date, r
 facts); the model only rewrites the text using that brief, so it can't invent a law's status.
 To make the checker know a new act, add an entry with `patterns` to `norms.json` — not prompt text.
 A repealed act inherits `facts` from its replacement (`replaced_by` matches a `title`). Unrecognised
-law-like references are reported as `unknown`.
+law-like references are reported as `unknown`. Field reference and update procedure: `docs/NORMS.md`.
 
 **Table transform** (`services/tables.py`): parse CSV/TSV/Excel paste (rejects duplicate/empty
 headers and over-wide rows instead of losing data), send rows to the model in chunks of 15 as JSON,

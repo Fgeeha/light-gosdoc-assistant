@@ -3,7 +3,7 @@
 from collections.abc import Iterator
 from datetime import UTC, datetime
 
-from sqlalchemy import DateTime, String, create_engine
+from sqlalchemy import JSON, DateTime, String, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
 
 from app.config import get_settings
@@ -35,6 +35,15 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(UTC)
     )
+
+
+class Norm(Base):
+    """Запись справочника актов. Вся запись хранится в JSON-поле data (см. docs/NORMS.md)."""
+
+    __tablename__ = "norms"
+
+    norm_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    data: Mapped[dict] = mapped_column(JSON)
 
 
 def get_db() -> Iterator[Session]:

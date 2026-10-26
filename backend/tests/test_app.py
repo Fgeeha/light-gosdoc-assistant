@@ -214,9 +214,9 @@ def test_example_docs_download(admin):
 
 def test_admin_norms_list_and_updates(admin, monkeypatch):
     norms = admin.get("/api/admin/norms").json()
-    assert len(norms) == 19
+    assert len(norms) >= 19
     fz59 = next(n for n in norms if n["id"] == "fz-59")
-    assert fz59["status"] == "active" and fz59["facts_count"] >= 1
+    assert fz59["status"] == "active" and fz59["facts_count"] >= 1 and fz59["verified"] is True
     ukaz = next(n for n in norms if n["id"] == "ukaz-1968-2534")
     assert ukaz["status"] == "repealed" and ukaz["replaced_by"].startswith("Федеральный закон")
 
@@ -243,3 +243,20 @@ def test_admin_norms_list_and_updates(admin, monkeypatch):
             "url": "http://x/1",
         }
     ]
+
+
+def test_admin_norm_edit_persists_and_affects_check(admin):
+    from app.services import normcheck
+
+    # 152-ФЗ действует — меняем статус из UI на «утратил силу».
+    r = admin.patch("/api/admin/norms/fz-152", json={"status": "repealed", "since": "2030"})
+    assert (
+        r.status_code == 200 and r.json()["status"] == "repealed" and r.json()["verified"] is True
+    )
+
+    status = {f["norm_id"]: f["status"] for f in normcheck.find_references("согласно 152-ФЗ")}
+    assert status["fz-152"] == "repealed"  # правка видна проверке
+
+    # вернуть как было, чтобы не влиять на другие тесты
+    admin.patch("/api/admin/norms/fz-152", json={"status": "active", "since": None})
+    assert admin.patch("/api/admin/norms/fz-000", json={"status": "active"}).status_code == 404

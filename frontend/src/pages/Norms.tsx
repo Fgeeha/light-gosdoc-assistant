@@ -14,10 +14,29 @@ export default function Norms() {
   const [updates, setUpdates] = useState<NormUpdate[] | null>(null);
   const [checking, setChecking] = useState(false);
   const [checkError, setCheckError] = useState<string | null>(null);
+  const [draft, setDraft] = useState<Record<string, Norm["status"]>>({});
+  const [saving, setSaving] = useState<string | null>(null);
 
   useEffect(() => {
     api<Norm[]>("/admin/norms").then(setNorms, (e) => setError(e.message));
   }, []);
+
+  async function save(n: Norm) {
+    setSaving(n.id);
+    setError(null);
+    try {
+      const updated = await api<Norm>(`/admin/norms/${n.id}`, {
+        method: "PATCH",
+        json: { status: draft[n.id] },
+      });
+      setNorms((list) => list.map((x) => (x.id === n.id ? updated : x)));
+      setDraft((d) => Object.fromEntries(Object.entries(d).filter(([k]) => k !== n.id)));
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setSaving(null);
+    }
+  }
 
   async function check() {
     setChecking(true);
@@ -39,7 +58,7 @@ export default function Norms() {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <PageHeader
           title="Справочник актов"
-          lead="По этой базе проверка находит ссылки на акты. Изменения в самих актах отслеживаются по порталу опубликования pravo.gov.ru."
+          lead="По этой базе проверка находит ссылки на акты. Статус можно изменить здесь — правка сохраняется и сразу влияет на проверку. Изменения в актах отслеживаются по порталу опубликования pravo.gov.ru."
         />
         <Button onClick={check} disabled={checking}>
           {checking ? <Spinner /> : null}
@@ -101,7 +120,7 @@ export default function Norms() {
         <table className="w-full border-collapse text-[14px]">
           <thead className="bg-desk/60 text-left">
             <tr>
-              {["Акт", "Статус", "С даты", "Замена", "Нормы"].map((h, i) => (
+              {["Акт", "Статус", "С даты", "Замена", "Нормы", ""].map((h, i) => (
                 <th key={i} className="whitespace-nowrap border-b border-line px-4 py-2.5 font-medium">
                   {h}
                 </th>
@@ -109,19 +128,47 @@ export default function Norms() {
             </tr>
           </thead>
           <tbody>
-            {norms.map((n) => (
-              <tr key={n.id} className="align-top">
-                <td className="border-b border-line px-4 py-2.5">{n.title}</td>
-                <td className="border-b border-line px-4 py-2.5">
-                  <span className={`whitespace-nowrap rounded-full px-2 py-0.5 text-[12px] ${STATUS[n.status].cls}`}>
-                    {STATUS[n.status].label}
-                  </span>
-                </td>
-                <td className="whitespace-nowrap border-b border-line px-4 py-2.5 text-muted">{n.since ?? "—"}</td>
-                <td className="border-b border-line px-4 py-2.5 text-muted">{n.replaced_by ?? "—"}</td>
-                <td className="border-b border-line px-4 py-2.5 text-center text-muted">{n.facts_count || "—"}</td>
-              </tr>
-            ))}
+            {norms.map((n) => {
+              const value = draft[n.id] ?? n.status;
+              const dirty = value !== n.status;
+              return (
+                <tr key={n.id} className="align-top">
+                  <td className="border-b border-line px-4 py-2.5">
+                    {n.title}
+                    {!n.verified && (
+                      <span className="ml-2 whitespace-nowrap rounded-full bg-[#8A5B00]/10 px-2 py-0.5 text-[11px] text-[#8A5B00]">
+                        не проверено
+                      </span>
+                    )}
+                  </td>
+                  <td className="border-b border-line px-4 py-2.5">
+                    <select
+                      value={value}
+                      onChange={(e) =>
+                        setDraft((d) => ({ ...d, [n.id]: e.target.value as Norm["status"] }))
+                      }
+                      className={`rounded-md border border-line px-2 py-1 text-[13px] ${STATUS[value].cls}`}
+                    >
+                      {(Object.keys(STATUS) as Norm["status"][]).map((s) => (
+                        <option key={s} value={s} className="bg-white text-ink">
+                          {STATUS[s].label}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                  <td className="whitespace-nowrap border-b border-line px-4 py-2.5 text-muted">{n.since ?? "—"}</td>
+                  <td className="border-b border-line px-4 py-2.5 text-muted">{n.replaced_by ?? "—"}</td>
+                  <td className="border-b border-line px-4 py-2.5 text-center text-muted">{n.facts_count || "—"}</td>
+                  <td className="border-b border-line px-4 py-2.5">
+                    {dirty && (
+                      <Button variant="secondary" onClick={() => save(n)} disabled={saving === n.id}>
+                        {saving === n.id ? <Spinner /> : "Сохранить"}
+                      </Button>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

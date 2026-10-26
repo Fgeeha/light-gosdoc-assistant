@@ -6,13 +6,15 @@
 """
 
 from datetime import date, timedelta
+from typing import Literal
 
 import httpx
 from fastapi import APIRouter, HTTPException, Query, status
 from pydantic import BaseModel
 
-from app.security import AdminUser
-from app.services import sources
+from app.db import Norm
+from app.security import DB, AdminUser
+from app.services import norms_store, sources
 from app.services.normcheck import load_norms
 
 router = APIRouter(prefix="/api/admin/norms", tags=["admin"])
@@ -25,6 +27,16 @@ class NormOut(BaseModel):
     since: str | None = None
     replaced_by: str | None = None
     facts_count: int
+    verified: bool
+
+
+class NormPatch(BaseModel):
+    status: Literal["active", "repealed", "partially"] | None = None
+    since: str | None = None
+    replaced_by: str | None = None
+    facts: list[str] | None = None
+    # Отметка «проверено юристом»: правка из UI подтверждает запись.
+    verified: bool | None = None
 
 
 class Update(BaseModel):
@@ -44,9 +56,40 @@ def list_norms(_: AdminUser) -> list[NormOut]:
             since=n.get("since"),
             replaced_by=n.get("replaced_by"),
             facts_count=len(n.get("facts") or []),
+            # Записи без явного флага считаются проверенными (исходные 19 актов).
+            verified=n.get("verified", True),
         )
         for n in load_norms()
     ]
+
+
+@router.patch("/{norm_id}", response_model=NormOut)
+def update_norm(norm_id: str, body: NormPatch, _: AdminUser, db: DB) -> NormOut:
+    row = db.get(Norm, norm_id)
+    if row is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Акт не найден в справочнике")
+    data = dict(row.data)
+    changes = body.model_dump(exclude_unset=True)
+    for key in ("status", "since", "replaced_by", "facts"):
+        if key in changes:
+            if changes[key] in (None, [], ""):
+                data.pop(key, None)
+            else:
+                data[key] = changes[key]
+    # Любая правка из UI — это подтверждение записи, если прямо не сказано иное.
+    data["verified"] = changes.get("verified", True)
+    row.data = data
+    db.commit()
+    norms_store.refresh()
+    return NormOut(
+        id=data["id"],
+        title=data["title"],
+        status=data["status"],
+        since=data.get("since"),
+        replaced_by=data.get("replaced_by"),
+        facts_count=len(data.get("facts") or []),
+        verified=data["verified"],
+    )
 
 
 @router.get("/updates", response_model=list[Update])

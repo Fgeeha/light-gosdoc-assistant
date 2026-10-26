@@ -4,15 +4,16 @@
 текст по найденным фактам — так она не «придумывает» статусы законов.
 """
 
-import json
 import re
-from functools import lru_cache
 from pathlib import Path
 from typing import Literal, TypedDict
 
 from app.llm import Message
+from app.services.norms_store import load_norms  # re-export: справочник теперь в norms_store
 
 DATA = Path(__file__).resolve().parent.parent / "data"
+
+__all__ = ["DATA", "Finding", "build_messages", "find_references", "load_norms", "needs_rewrite"]
 
 # Ссылки, похожие на НПА, — чтобы честно сообщить «нет в базе».
 _GENERIC_REFS = re.compile(
@@ -36,14 +37,6 @@ class Finding(TypedDict):
     replaced_by: str | None
     comment: str | None
     facts: list[str]
-
-
-@lru_cache
-def load_norms() -> list[dict]:
-    norms = json.loads((DATA / "norms.json").read_text(encoding="utf-8"))["norms"]
-    for n in norms:
-        n["_re"] = re.compile("|".join(f"(?:{p})" for p in n["patterns"]), re.IGNORECASE)
-    return norms
 
 
 def find_references(text: str) -> list[Finding]:

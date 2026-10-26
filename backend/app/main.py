@@ -9,6 +9,7 @@ from app.config import get_settings
 from app.db import SessionLocal, User, init_db
 from app.routers import admin, auth, norms, tools
 from app.security import hash_password
+from app.services import norms_store
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger("gosdoc")
@@ -38,6 +39,7 @@ def bootstrap_admin() -> None:
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     init_db()
     bootstrap_admin()
+    norms_store.seed()
     yield
 
 

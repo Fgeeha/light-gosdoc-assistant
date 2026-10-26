@@ -10,7 +10,7 @@ HOST_ENV := set -a && . ../.env && set +a && \
   export LLM_BASE_URL=$${LLM_BASE_URL/host.docker.internal/localhost}
 
 .PHONY: help install run run-frontend lint format test check \
-        bench examples up-local down-local up-prod down-prod logs clean
+        bench examples garant pravo up-local down-local up-prod down-prod logs clean
 
 help: ## Показать список целей
 	@grep -hE '^[a-zA-Z0-9_-]+:.*## ' $(MAKEFILE_LIST) \
@@ -49,6 +49,12 @@ bench: ## Сравнить модели на демо-сценариях: make b
 
 examples: ## Пересобрать тексты образцов из документов в examples/docs
 	cd backend && uv run python scripts/build_examples.py
+
+garant: ## Сверить справочник актов с ГАРАНТ (GARANT_TOKEN в .env): make garant SINCE=2026-10-01
+	cd backend && $(HOST_ENV) && uv run python scripts/garant_sync.py $(if $(SINCE),--since $(SINCE))
+
+pravo: ## Отследить изменения актов по publication.pravo.gov.ru (без токена): make pravo SINCE=2026-08-01
+	cd backend && uv run python scripts/pravo_sync.py $(if $(SINCE),--since $(SINCE))
 
 # --- Docker -----------------------------------------------------------------
 

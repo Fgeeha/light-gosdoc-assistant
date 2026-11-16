@@ -526,3 +526,38 @@ def test_login_locks_account_after_repeated_failures(caplog):
         r = c.post("/api/auth/login", json={"username": "ghost", "password": "wrong-pass"})
         assert r.status_code == 401  # другие логины не затронуты
     assert "Неудачный вход: 'admin'" in caplog.text
+
+
+ADMIN_ENDPOINTS = [
+    ("get", "/api/admin/users"),
+    ("post", "/api/admin/users"),
+    ("patch", "/api/admin/users/1"),
+    ("delete", "/api/admin/users/1"),
+    ("get", "/api/admin/norms"),
+    ("patch", "/api/admin/norms/fz-59"),
+    ("get", "/api/admin/norms/export"),
+    ("get", "/api/admin/norms/fz-59/history"),
+    ("get", "/api/admin/norms/updates"),
+]
+TOOL_ENDPOINTS = [
+    ("get", "/api/tools/examples"),
+    ("get", "/api/tools/status"),
+    ("post", "/api/tools/check"),
+    ("post", "/api/tools/letter"),
+    ("post", "/api/tools/table"),
+    ("post", "/api/tools/docx"),
+    ("post", "/api/tools/extract"),
+]
+
+
+def test_endpoint_permissions(admin, anon):
+    body = {"username": "clerk", "password": "clerk-password"}
+    assert admin.post("/api/admin/users", json=body).status_code in (201, 409)
+    with TestClient(app) as clerk:
+        assert clerk.post("/api/auth/login", json=body).status_code == 200
+        for method, url in ADMIN_ENDPOINTS + TOOL_ENDPOINTS:
+            kw = {"json": {}} if method in ("post", "patch") else {}
+            assert getattr(anon, method)(url, **kw).status_code == 401, (method, url)
+        for method, url in ADMIN_ENDPOINTS:
+            kw = {"json": {}} if method in ("post", "patch") else {}
+            assert getattr(clerk, method)(url, **kw).status_code == 403, (method, url)

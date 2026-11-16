@@ -15,6 +15,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 
+from app.audit import audit
 from app.db import Norm, NormChange
 from app.security import DB, AdminUser
 from app.services import norms_store, sources
@@ -112,6 +113,7 @@ def update_norm(norm_id: str, body: NormPatch, admin: AdminUser, db: DB) -> Norm
     db.add(NormChange(norm_id=norm_id, changed_by=admin.username, before=row.data, after=data))
     row.data = data
     db.commit()
+    audit.info("%r изменил акт %s: %s", admin.username, norm_id, ", ".join(sorted(changes)) or "—")
     norms_store.refresh()
     return _to_out(data)
 

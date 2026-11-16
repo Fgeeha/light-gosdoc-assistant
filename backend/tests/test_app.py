@@ -514,3 +514,15 @@ def test_extract_docx_keeps_tables_in_order():
 def test_extract_reports_bad_encoding():
     with pytest.raises(ValueError, match="кодировку"):
         files.extract_text("a.txt", bytes([0x98]) * 4)
+
+
+def test_login_locks_account_after_repeated_failures(caplog):
+    with TestClient(app) as c:
+        for _ in range(5):
+            r = c.post("/api/auth/login", json={"username": "admin", "password": "wrong-pass"})
+            assert r.status_code == 401
+        r = c.post("/api/auth/login", json={"username": "admin", "password": "admin-password"})
+        assert r.status_code == 429  # даже верный пароль, пока счётчик не истёк
+        r = c.post("/api/auth/login", json={"username": "ghost", "password": "wrong-pass"})
+        assert r.status_code == 401  # другие логины не затронуты
+    assert "Неудачный вход: 'admin'" in caplog.text

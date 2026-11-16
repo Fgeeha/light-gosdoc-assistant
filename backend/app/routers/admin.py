@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Response, status
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 
+from app.audit import audit
 from app.db import User
 from app.schemas import UserCreate, UserOut, UserUpdate
 from app.security import DB, AdminUser, hash_password, set_session_cookie
@@ -22,7 +23,7 @@ def list_users(_: AdminUser, db: DB) -> list[User]:
 
 
 @router.post("", response_model=UserOut, status_code=status.HTTP_201_CREATED)
-def create_user(body: UserCreate, _: AdminUser, db: DB) -> User:
+def create_user(body: UserCreate, admin: AdminUser, db: DB) -> User:
     # Логины сравниваются без учёта регистра: «Ivanov» и «ivanov» — один человек.
     taken = HTTPException(status.HTTP_409_CONFLICT, "Логин уже занят")
     if db.scalar(select(User).where(func.lower(User.username) == body.username.lower())):
@@ -39,6 +40,12 @@ def create_user(body: UserCreate, _: AdminUser, db: DB) -> User:
     except IntegrityError:  # тот же логин создан параллельным запросом
         db.rollback()
         raise taken from None
+    audit.info(
+        "%r создал пользователя %r (администратор: %s)",
+        admin.username,
+        user.username,
+        user.is_admin,
+    )
     return user
 
 
@@ -61,6 +68,14 @@ def update_user(
     if body.is_active is not None:
         user.is_active = body.is_active
     db.commit()
+    changed = sorted(body.model_dump(exclude_unset=True, exclude={"password"}))
+    audit.info(
+        "%r изменил пользователя %r: %s%s",
+        admin.username,
+        user.username,
+        ", ".join(changed) or "—",
+        ", пароль" if body.password is not None else "",
+    )
     if body.password is not None and user.id == admin.id:
         set_session_cookie(response, user)  # иначе администратор выкинет из системы сам себя
     return user
@@ -73,3 +88,4 @@ def delete_user(user_id: int, admin: AdminUser, db: DB) -> None:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Нельзя удалить себя")
     db.delete(user)
     db.commit()
+    audit.info("%r удалил пользователя %r", admin.username, user.username)

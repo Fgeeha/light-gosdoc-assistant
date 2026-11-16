@@ -12,6 +12,9 @@ import httpx
 
 from app.services.normcheck import load_norms
 
+# HTTP осознанно: на 2026-11-16 порт 443 портала не отвечал (таймаут), HTTP — отвечал.
+# Ответ можно подменить на пути, поэтому список изменений — только подсказка юристу,
+# статус акта по нему автоматически не меняется. Перейти на https://, когда TLS заработает.
 PRAVO_BASE_URL = "http://publication.pravo.gov.ru"
 # Блоки публикации, где выходят изменения федеральных актов (…/api/PublicBlocks — весь список).
 DEFAULT_BLOCKS = ("president", "government", "federal_authorities")

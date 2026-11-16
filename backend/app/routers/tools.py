@@ -8,6 +8,7 @@ from urllib.parse import quote
 
 import httpx
 from fastapi import APIRouter, HTTPException, UploadFile, status
+from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import FileResponse, Response, StreamingResponse
 
 from app import llm
@@ -122,12 +123,13 @@ async def extract(file: UploadFile, _: CurrentUser) -> dict:
     if len(data) > files.MAX_BYTES:
         raise HTTPException(status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, "Файл больше 10 МБ")
     try:
-        return {"text": files.extract_text(file.filename or "", data)}
+        # Разбор docx/pdf синхронный и тяжёлый — вне цикла событий, чтобы не вставали потоки.
+        return {"text": await run_in_threadpool(files.extract_text, file.filename or "", data)}
     except ValueError as e:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, str(e)) from e
     except Exception as e:
         # Парсеры docx/pdf бросают разнородные исключения на повреждённых файлах.
-        logger.warning("Не удалось прочитать файл %s: %r", file.filename, e)
+        logger.warning("Не удалось прочитать файл %r: %r", file.filename, e)
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_ENTITY, "Не удалось прочитать файл"
         ) from e

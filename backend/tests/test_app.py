@@ -317,6 +317,23 @@ def test_docx_roundtrip(admin):
     assert r.json()["text"] == "Строка 1\nСтрока 2"
 
 
+def test_extract_limits(admin, monkeypatch):
+    def upload(name: str, content: bytes):
+        return admin.post(
+            "/api/tools/extract", files={"file": (name, content, "application/octet-stream")}
+        )
+
+    monkeypatch.setattr(files, "MAX_UNPACKED_BYTES", 1000)  # обычный .docx распаковывается больше
+    r = upload("a.docx", files.to_docx("текст"))
+    assert r.status_code == 422 and "распаковки" in r.json()["detail"]
+
+    monkeypatch.setattr(files, "MAX_TEXT_CHARS", 5)
+    r = upload("a.txt", "длинный текст".encode())
+    assert r.status_code == 422 and "символов" in r.json()["detail"]
+
+    assert upload("a.docx", b"not a zip").status_code == 422
+
+
 def test_examples_match_source_documents():
     import sys
 

@@ -400,6 +400,18 @@ def test_norms_do_not_fall_back_to_file_when_db_fails(admin, monkeypatch):
     assert norms_store.load_norms()  # после восстановления БД — снова из БД
 
 
+def test_admin_norm_updates_portal_errors(admin, monkeypatch):
+    from app.services import sources
+
+    for exc, code in ((KeyError("eoNumber"), 502), (TimeoutError(), 504)):
+
+        def fail(*_, exc=exc, **__):
+            raise exc
+
+        monkeypatch.setattr(sources, "fetch_pravo_changes", fail)
+        assert admin.get("/api/admin/norms/updates").status_code == code
+
+
 def test_admin_norm_edit_persists_and_affects_check(admin):
     from app.services import normcheck
 

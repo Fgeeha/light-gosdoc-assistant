@@ -5,6 +5,7 @@
 """
 
 import re
+import time
 from datetime import date, datetime
 from typing import TypedDict
 
@@ -36,16 +37,20 @@ def fetch_pravo_changes(
     since: date,
     blocks: tuple[str, ...] = DEFAULT_BLOCKS,
     norms: list[dict] | None = None,
+    deadline: float | None = None,
 ) -> list[Change]:
     """Опубликованные с даты since документы, чьи названия ссылаются на отслеживаемые акты.
 
     Фильтра по дате у API нет, поэтому документы листаются от новых к старым до даты since.
+    deadline — момент по time.monotonic(), после которого обход прерывается TimeoutError.
     """
     norms = norms if norms is not None else load_norms()
     hits: list[Change] = []
     seen: set[tuple[str, str]] = set()
     for block in blocks:
         for index in range(1, MAX_PAGES + 1):
+            if deadline is not None and time.monotonic() > deadline:
+                raise TimeoutError("Портал отвечает слишком долго")
             r = client.get(
                 "/api/Documents",
                 params={"block": block, "PageSize": PAGE_SIZE, "Index": index},

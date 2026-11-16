@@ -4,6 +4,7 @@
 опубликованных изменений по pravo.gov.ru, чтобы было видно, какие акты пора проверить.
 """
 
+import time
 from datetime import date, timedelta
 from typing import Literal
 
@@ -17,6 +18,7 @@ from app.services import norms_store, sources
 from app.services.normcheck import load_norms
 
 router = APIRouter(prefix="/api/admin/norms", tags=["admin"])
+UPDATES_MAX_SECONDS = 60
 
 
 class NormOut(BaseModel):
@@ -98,9 +100,21 @@ def check_updates(_: AdminUser, days: int = Query(30, ge=1, le=365)) -> list[sou
     since = date.today() - timedelta(days)
     # Законы и постановления; агентские акты (federal_authorities) слишком объёмны для онлайн-кнопки.
     blocks = ("president", "government")
+    # Обход — сотни запросов подряд; без общего предела кнопка могла висеть минутами.
+    deadline = time.monotonic() + UPDATES_MAX_SECONDS
     try:
         with httpx.Client(base_url=sources.PRAVO_BASE_URL, timeout=30) as client:
-            return sources.fetch_pravo_changes(client, since, blocks)
+            return sources.fetch_pravo_changes(client, since, blocks, deadline=deadline)
+    except TimeoutError as e:
+        raise HTTPException(
+            status.HTTP_504_GATEWAY_TIMEOUT,
+            "Портал опубликования отвечает слишком долго — сократите период проверки",
+        ) from e
+    except (KeyError, ValueError) as e:
+        # Портал сменил формат ответа (нет полей, другая дата).
+        raise HTTPException(
+            status.HTTP_502_BAD_GATEWAY, "Портал опубликования вернул неожиданный ответ"
+        ) from e
     except httpx.HTTPError as e:
         raise HTTPException(
             status.HTTP_502_BAD_GATEWAY, f"Портал опубликования недоступен: {e}"

@@ -383,6 +383,23 @@ def test_admin_norms_list_and_updates(admin, monkeypatch):
     ]
 
 
+def test_norms_do_not_fall_back_to_file_when_db_fails(admin, monkeypatch):
+    from sqlalchemy.exc import OperationalError
+
+    from app.services import norms_store
+
+    def broken():
+        raise OperationalError("select", {}, Exception("db down"))
+
+    monkeypatch.setattr(norms_store, "SessionLocal", broken)
+    norms_store.refresh()
+    with pytest.raises(OperationalError):
+        norms_store.load_norms()
+    monkeypatch.undo()
+    norms_store.refresh()
+    assert norms_store.load_norms()  # после восстановления БД — снова из БД
+
+
 def test_admin_norm_edit_persists_and_affects_check(admin):
     from app.services import normcheck
 

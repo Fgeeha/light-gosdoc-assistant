@@ -59,6 +59,31 @@ def test_admin_creates_user_who_can_login_but_not_administer(admin):
     assert admin.delete(f"/api/admin/users/{uid}").status_code == 204
 
 
+def test_bootstrap_admin_rejects_bad_password(monkeypatch, caplog):
+    from app import main
+    from app.config import get_settings
+
+    class EmptyDB:  # пользователей нет, создавать никого нельзя
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_):
+            return None
+
+        def scalar(self, *_):
+            return 0
+
+        def add(self, _):
+            raise AssertionError("администратор с плохим паролем не должен создаваться")
+
+    monkeypatch.setattr(main, "SessionLocal", EmptyDB)
+    for bad in ("short", "п" * 40):  # 5 символов; 80 байт
+        monkeypatch.setattr(get_settings(), "admin_password", bad)
+        main.bootstrap_admin()
+        assert "ADMIN_PASSWORD" in caplog.text
+        caplog.clear()
+
+
 def test_api_docs_disabled_by_default(client):
     assert client.get("/api/openapi.json").status_code == 404
     assert client.get("/api/docs").status_code == 404

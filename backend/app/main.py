@@ -8,7 +8,7 @@ from sqlalchemy import func, select
 from app.config import get_settings
 from app.db import SessionLocal, User, init_db
 from app.routers import admin, auth, norms, tools
-from app.security import hash_password
+from app.security import MAX_PASSWORD_BYTES, hash_password
 from app.services import norms_store
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -22,6 +22,13 @@ def bootstrap_admin() -> None:
             return
         if not (s.admin_username and s.admin_password):
             logger.warning("Пользователей нет: задайте ADMIN_USERNAME и ADMIN_PASSWORD")
+            return
+        # Те же границы, что у паролей из админки: 8 символов и 72 байта bcrypt.
+        pw = s.admin_password
+        if len(pw) < 8 or len(pw.encode()) > MAX_PASSWORD_BYTES:
+            logger.error(
+                "ADMIN_PASSWORD: нужно от 8 символов и не больше 72 байт (кириллица — 2 байта)"
+            )
             return
         db.add(
             User(

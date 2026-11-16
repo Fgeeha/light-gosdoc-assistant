@@ -107,12 +107,16 @@ def _brief(findings: list[Finding]) -> str:
     for f in findings:
         if f["status"] == "unknown":
             continue
-        if f["status"] == "repealed":
-            line = (
-                f"- {f['title']} — УТРАТИЛ СИЛУ (с {f['since']}). Заменить на: {f['replaced_by']}."
-            )
-        elif f["status"] == "partially":
-            line = f"- {f['title']} — ПРИМЕНЯЕТСЯ ОГРАНИЧЕННО (с {f['since']}). Ссылаться на: {f['replaced_by']}."
+        if f["status"] in ("repealed", "partially"):
+            repealed = f["status"] == "repealed"
+            line = f"- {f['title']} — {'УТРАТИЛ СИЛУ' if repealed else 'ПРИМЕНЯЕТСЯ ОГРАНИЧЕННО'}"
+            # since/replaced_by могут быть пустыми после правки статуса из админки.
+            if f["since"]:
+                line += f" (с {f['since']})"
+            if f["replaced_by"]:
+                line += f". {'Заменить на' if repealed else 'Ссылаться на'}: {f['replaced_by']}."
+            else:
+                line += ". Замена в справочнике не указана."
         else:
             line = f"- {f['title']} — действует."
         if f.get("comment"):

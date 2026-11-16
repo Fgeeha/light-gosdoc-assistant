@@ -92,6 +92,16 @@ def test_find_references_does_not_confuse_numbers():
     ]
 
 
+def test_brief_without_since_and_replacement_has_no_none():
+    f = normcheck.find_references("согласно 152-ФЗ")[0] | {
+        "status": "repealed",
+        "since": None,
+        "replaced_by": None,
+    }
+    text = normcheck.build_messages("согласно 152-ФЗ", [f])[1]["content"]
+    assert "None" not in text and "УТРАТИЛ СИЛУ. Замена в справочнике не указана." in text
+
+
 def test_strip_think_across_chunk_boundaries():
     async def gen():
         for c in ["<thi", "nk>секрет</th", "ink>", "Ответ <", "b>", " готов"]:

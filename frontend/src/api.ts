@@ -156,7 +156,12 @@ export async function downloadDocx(text: string, filename: string) {
 }
 
 export function downloadCsv(columns: string[], rows: Record<string, string>[], filename: string) {
-  const esc = (v: string) => (/[";\n]/.test(v) ? `"${v.replaceAll('"', '""')}"` : v);
+  const esc = (raw: string) => {
+    // «=…», «+…», «-…», «@…» Excel исполняет как формулу (CSV-инъекция); числа и телефоны не трогаем.
+    const formula = /^[=+\-@\t\r]/.test(raw) && !/^[+-]?[\d\s().,-]+$/.test(raw);
+    const v = formula ? `'${raw}` : raw;
+    return /[";\r\n]/.test(v) ? `"${v.replaceAll('"', '""')}"` : v;
+  };
   const lines = [columns, ...rows.map((r) => columns.map((c) => r[c] ?? ""))].map((l) =>
     l.map(esc).join(";"),
   );

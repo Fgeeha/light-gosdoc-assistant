@@ -66,6 +66,11 @@ facts); the model only rewrites the text using that brief, so it can't invent a 
 To make the checker know a new act, add an entry with `patterns` to `norms.json` — not prompt text.
 A repealed act inherits `facts` from its replacement (`replaced_by` matches a `title`). Unrecognised
 law-like references are reported as `unknown`. Field reference and update procedure: `docs/NORMS.md`.
+Statuses are kept current by `services/status_sync.py` (scraping the free IPS pravo.gov.ru and the
+gostinfo.ru GOST catalogue; no API, HTML parsing): it writes changes straight into the DB with
+`verified: false` + `sync_note`, and a lawyer confirms them in the admin page. Changed fields go to
+`synced_fields` so `seed()` keeps them like `edited_fields`; a missing GOST replacement is added as a
+new record so `replaced_by` always matches a `title`. It never writes `facts`.
 
 **Table transform** (`services/tables.py`): parse CSV/TSV/Excel paste (rejects duplicate/empty
 headers and over-wide rows instead of losing data), send rows to the model in chunks of 15 as JSON,

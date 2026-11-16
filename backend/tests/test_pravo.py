@@ -21,7 +21,8 @@ def make_handler(pages: dict[str, list[list[dict]]]):
     def handler(request: httpx.Request) -> httpx.Response:
         block = request.url.params["block"]
         index = int(request.url.params["Index"])
-        assert int(request.url.params["PageSize"]) == 30
+        assert int(request.url.params["PageSize"]) == 200
+        assert request.url.params["PublishDateFrom"] == "01.10.2026"
         block_pages = pages.get(block, [])
         items = block_pages[index - 1] if index <= len(block_pages) else []
         return httpx.Response(200, json=_page(items))

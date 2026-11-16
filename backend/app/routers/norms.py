@@ -1,8 +1,9 @@
 """Справочник нормативных актов для администратора.
 
 Просмотр, правка записи (PATCH, хранится в БД — см. services/norms_store) с журналом правок,
-выгрузка в формате norms.json и поиск опубликованных изменений по pravo.gov.ru, чтобы было
-видно, какие акты пора проверить.
+выгрузка в формате norms.json, поиск опубликованных изменений по pravo.gov.ru и автоматическая
+сверка статусов с ИПС pravo.gov.ru и каталогом ГОСТ (services/status_sync.py): её результаты
+сразу попадают в справочник с пометкой «не проверено».
 """
 
 import time
@@ -18,7 +19,7 @@ from sqlalchemy import select
 from app.audit import audit
 from app.db import Norm, NormChange
 from app.security import DB, AdminUser
-from app.services import norms_store, sources
+from app.services import norms_store, sources, status_sync
 from app.services.normcheck import load_norms, replaced_by_text, replacements
 
 router = APIRouter(prefix="/api/admin/norms", tags=["admin"])
@@ -35,6 +36,20 @@ class NormOut(BaseModel):
     verified: bool
     updated_by: str | None = None
     updated_at: str | None = None
+    sync_note: str | None = None
+    ips_nd: str | None = None
+
+
+class SyncResult(BaseModel):
+    norm_id: str
+    changes: dict
+    note: str
+
+
+class SyncReport(BaseModel):
+    checked: int
+    changed: list[SyncResult]
+    unchecked: list[str]
 
 
 class NormChangeOut(BaseModel):
@@ -56,6 +71,8 @@ def _to_out(n: dict) -> NormOut:
         verified=n.get("verified", True),
         updated_by=n.get("updated_by"),
         updated_at=n.get("updated_at"),
+        sync_note=n.get("sync_note"),
+        ips_nd=n.get("ips_nd"),
     )
 
 
@@ -100,6 +117,8 @@ def update_norm(norm_id: str, body: NormPatch, admin: AdminUser, db: DB) -> Norm
                 data[key] = changes[key]
     # Любая правка из UI — это подтверждение записи, если прямо не сказано иное.
     data["verified"] = body.verified
+    if body.verified:
+        data.pop("sync_note", None)  # пояснение автосверки снято вместе с подтверждением
     # Отметка правки: seed() не перезапишет такую запись из norms.json.
     data["updated_by"] = admin.username
     data["updated_at"] = datetime.now(UTC).isoformat(timespec="seconds")
@@ -134,17 +153,31 @@ def norm_history(norm_id: str, _: AdminUser, db: DB) -> list[NormChange]:
     )
 
 
+@router.post("/sync", response_model=SyncReport)
+def sync_statuses(admin: AdminUser) -> status_sync.Report:
+    """Сверить статусы со внешними источниками и сразу записать расхождения в справочник.
+
+    Около 70 запросов к двум сайтам, 1–3 минуты (в nginx для этого адреса таймаут 600 с).
+    """
+    before = load_norms()
+    records, report = status_sync.run(before)
+    if not report["checked"]:
+        raise HTTPException(status.HTTP_502_BAD_GATEWAY, "Источники статусов недоступны")
+    norms_store.save(records, before)
+    audit.info("%r запустил сверку статусов: изменено %d", admin.username, len(report["changed"]))
+    return report
+
+
 @router.get("/updates", response_model=list[sources.Change])
 def check_updates(_: AdminUser, days: int = Query(30, ge=1, le=365)) -> list[sources.Change]:
     """Публикации за последние `days` дней, затрагивающие отслеживаемые акты (pravo.gov.ru)."""
     since = date.today() - timedelta(days)
-    # Законы и постановления; агентские акты (federal_authorities) слишком объёмны для онлайн-кнопки.
-    blocks = ("president", "government")
     # Обход — сотни запросов подряд; без общего предела кнопка могла висеть минутами.
     deadline = time.monotonic() + UPDATES_MAX_SECONDS
     try:
         with httpx.Client(base_url=sources.PRAVO_BASE_URL, timeout=30) as client:
-            return sources.fetch_pravo_changes(client, since, blocks, deadline=deadline)
+            # С фильтром по дате все три блока (и ведомственные акты) — несколько запросов.
+            return sources.fetch_pravo_changes(client, since, deadline=deadline)
     except TimeoutError as e:
         raise HTTPException(
             status.HTTP_504_GATEWAY_TIMEOUT,

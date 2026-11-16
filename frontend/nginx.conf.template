@@ -43,6 +43,13 @@ server {
         include /etc/nginx/security-headers.inc;
     }
 
+    # Сверка статусов справочника — около 70 запросов к внешним сайтам, 1–3 минуты.
+    location = /api/admin/norms/sync {
+        include /etc/nginx/proxy-backend.inc;
+        proxy_read_timeout 600s;
+        include /etc/nginx/security-headers.inc;
+    }
+
     location /api/ {
         include /etc/nginx/proxy-backend.inc;
         include /etc/nginx/security-headers.inc;

@@ -13,7 +13,15 @@ from app.services.norms_store import load_norms  # re-export: справочни
 
 DATA = Path(__file__).resolve().parent.parent / "data"
 
-__all__ = ["DATA", "Finding", "build_messages", "find_references", "load_norms", "needs_rewrite"]
+__all__ = [
+    "DATA",
+    "Finding",
+    "build_messages",
+    "find_references",
+    "load_norms",
+    "needs_rewrite",
+    "replacements",
+]
 
 # Ссылки, похожие на НПА, — чтобы честно сообщить «нет в базе».
 _GENERIC_REFS = re.compile(
@@ -39,6 +47,12 @@ class Finding(TypedDict):
     facts: list[str]
 
 
+def replacements(norm: dict) -> list[str]:
+    """Наименования актов-замен: replaced_by — строка или список (замена из нескольких актов)."""
+    value = norm.get("replaced_by") or []
+    return [value] if isinstance(value, str) else list(value)
+
+
 def find_references(text: str) -> list[Finding]:
     """Находки по тексту в порядке появления: известные акты и неизвестные ссылки."""
     findings: list[Finding] = []
@@ -58,10 +72,11 @@ def find_references(text: str) -> list[Finding]:
                 position=matches[0].start(),
                 occurrences=len(matches),
                 since=n.get("since"),
-                replaced_by=n.get("replaced_by"),
+                replaced_by="; ".join(replacements(n)) or None,
                 comment=n.get("comment"),
                 # Для отменённого акта — нормы того, что его заменил.
-                facts=n.get("facts") or by_title.get(n.get("replaced_by"), {}).get("facts", []),
+                facts=n.get("facts")
+                or [x for t in replacements(n) for x in by_title.get(t, {}).get("facts", [])],
             )
         )
     seen = set()

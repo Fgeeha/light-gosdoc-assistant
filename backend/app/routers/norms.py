@@ -18,7 +18,7 @@ from sqlalchemy import select
 from app.db import Norm, NormChange
 from app.security import DB, AdminUser
 from app.services import norms_store, sources
-from app.services.normcheck import load_norms
+from app.services.normcheck import load_norms, replacements
 
 router = APIRouter(prefix="/api/admin/norms", tags=["admin"])
 UPDATES_MAX_SECONDS = 60
@@ -49,7 +49,7 @@ def _to_out(n: dict) -> NormOut:
         title=n["title"],
         status=n["status"],
         since=n.get("since"),
-        replaced_by=n.get("replaced_by"),
+        replaced_by="; ".join(replacements(n)) or None,
         facts_count=len(n.get("facts") or []),
         # Записи без явного флага считаются проверенными (исходные акты справочника).
         verified=n.get("verified", True),
@@ -61,7 +61,8 @@ def _to_out(n: dict) -> NormOut:
 class NormPatch(BaseModel):
     status: Literal["active", "repealed", "partially"] | None = None
     since: str | None = None
-    replaced_by: str | None = None
+    # Строка или список наименований, если акт заменён несколькими.
+    replaced_by: str | list[str] | None = None
     facts: list[str] | None = None
     # Отметка «проверено юристом»: правка из UI подтверждает запись.
     verified: bool = True
@@ -86,9 +87,8 @@ def update_norm(norm_id: str, body: NormPatch, admin: AdminUser, db: DB) -> Norm
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Акт не найден в справочнике")
     data = dict(row.data)
     changes = body.model_dump(exclude_unset=True)
-    if changes.get("replaced_by") and changes["replaced_by"] not in {
-        n["title"] for n in load_norms()
-    }:
+    titles = {n["title"] for n in load_norms()}
+    if any(t not in titles for t in replacements(changes)):
         # По title подтягиваются нормы нового акта (normcheck.find_references).
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_ENTITY,

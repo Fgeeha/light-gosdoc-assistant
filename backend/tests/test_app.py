@@ -126,22 +126,21 @@ def test_find_references_does_not_confuse_numbers():
     ]
 
 
-# Замена — два акта; формат списка в replaced_by ещё не согласован (plan/2026-11-16-audit.md, B2).
-_REPLACED_BY_PENDING = {"sanpin-1340-03"}
-
-
 def test_replaced_by_matches_a_title():
     # Иначе нормы нового акта молча не попадают в справку для модели.
     norms = normcheck.load_norms()
     titles = {n["title"] for n in norms}
-    broken = [
-        n["id"]
-        for n in norms
-        if n.get("replaced_by")
-        and n["replaced_by"] not in titles
-        and n["id"] not in _REPLACED_BY_PENDING
-    ]
+    broken = [n["id"] for n in norms if any(t not in titles for t in normcheck.replacements(n))]
     assert broken == []
+
+
+def test_replaced_by_list_joins_replacements_and_facts(admin):
+    sp = "СП 2.2.3670-20 «Санитарно-эпидемиологические требования к условиям труда»"
+    r = admin.patch("/api/admin/norms/sp-2.2.3670-20", json={"facts": ["Норма СП."]})
+    assert r.status_code == 200
+    f = next(f for f in normcheck.find_references("по СанПиН 2.2.2/2.4.1340-03") if f["norm_id"])
+    assert f["norm_id"] == "sanpin-1340-03" and sp in f["replaced_by"] and "; " in f["replaced_by"]
+    assert f["facts"] == ["Норма СП."]
 
 
 def test_brief_without_since_and_replacement_has_no_none():

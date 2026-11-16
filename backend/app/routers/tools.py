@@ -30,7 +30,8 @@ def _stream(events: AsyncIterator[str]) -> StreamingResponse:
         try:
             async for e in events:
                 yield e
-        except (llm.LLMError, ValueError) as e:
+        except llm.LLMError as e:
+            # Только ошибки, текст которых написан для пользователя; остальное — в лог.
             yield _sse("error", {"message": str(e)})
         except Exception:
             logger.exception("Ошибка обработки запроса")

@@ -4,7 +4,7 @@ import csv
 import io
 import json
 
-from app.llm import Message
+from app.llm import LLMError, Message
 
 MAX_ROWS = 500
 CHUNK_ROWS = 15
@@ -70,11 +70,11 @@ def normalize_result(data: dict, columns: list[str], expected: int) -> list[dict
     """Приводит ответ модели к ровно `expected` строкам с нужными колонками."""
     rows = data.get("rows") if isinstance(data, dict) else None
     if not isinstance(rows, list):
-        raise ValueError("В ответе модели нет массива rows")
+        raise LLMError("В ответе модели нет массива rows")
     out = []
     for r in rows[:expected]:
         r = r if isinstance(r, dict) else {}
         out.append({c: "" if r.get(c) is None else str(r.get(c)).strip() for c in columns})
     if len(out) != expected:
-        raise ValueError(f"Модель вернула {len(out)} строк вместо {expected}")
+        raise LLMError(f"Модель вернула {len(out)} строк вместо {expected}")
     return out

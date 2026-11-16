@@ -1,6 +1,7 @@
 import asyncio
 import json
 
+import httpx
 import pytest
 from fastapi.testclient import TestClient
 
@@ -241,6 +242,28 @@ def test_table_endpoint_streams_rows(admin, monkeypatch):
     rows = [row for kind, data in events if kind == "rows" for row in data]
     assert len(rows) == 20 and rows[0] == {"A": "0", "B": ""}
     assert events[-1][0] == "done"
+
+
+def test_llm_errors_do_not_leak_details(admin, monkeypatch):
+    def server(request: httpx.Request) -> httpx.Response:
+        if request.url.path.endswith("/broken/v1/chat/completions"):
+            return httpx.Response(200, text="data: {не json\n\n")
+        return httpx.Response(401, json={"error": "org-secret-123: invalid key"})
+
+    real = httpx.AsyncClient
+    monkeypatch.setattr(
+        llm.httpx, "AsyncClient", lambda **kw: real(transport=httpx.MockTransport(server), **kw)
+    )
+    from app.config import get_settings
+
+    for base, expected in (
+        ("http://m/v1", "ошибку 401"),
+        ("http://m/broken/v1", "некорректный поток"),
+    ):
+        monkeypatch.setattr(get_settings(), "llm_base_url", base)
+        r = admin.post("/api/tools/letter", json={"incoming": "Прошу ответить"})
+        errors = [d["message"] for k, d in _events(r.text) if k == "error"]
+        assert len(errors) == 1 and expected in errors[0] and "org-secret" not in errors[0]
 
 
 def test_check_endpoint_streams_findings_and_rewrite(admin, monkeypatch):

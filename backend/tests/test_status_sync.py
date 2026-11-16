@@ -1,3 +1,4 @@
+import json
 import re
 from urllib.parse import parse_qs
 
@@ -256,3 +257,9 @@ def test_synced_fields_survive_seed(admin):
             s.get(Norm, "fz-38-2006").data = original
             s.commit()
         norms_store.refresh()
+
+
+def test_dump_json_reproduces_snapshot_formatting():
+    """--write-json не должен переформатировать norms.json: в git — только содержательный diff."""
+    src = (norms_store.DATA / "norms.json").read_text(encoding="utf-8")
+    assert norms_store.dump_json(json.loads(src)) == src

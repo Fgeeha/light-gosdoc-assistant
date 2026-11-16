@@ -10,6 +10,7 @@ API у обоих нет, разбирается HTML. Расхождения п
 
 CLI (работает и в контейнере, где нет scripts/): python -m app.services.status_sync [--apply]
 Без --apply печатает отчёт, с --apply пишет в БД из DATABASE_URL. Код выхода 1 при изменениях.
+--write-json сверяет файл-снимок norms.json и записывает результат в него (для git).
 """
 
 import argparse
@@ -330,7 +331,9 @@ def run(norms: list[dict]) -> tuple[list[dict], Report]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--apply", action="store_true", help="записать изменения в БД")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--apply", action="store_true", help="записать изменения в БД")
+    mode.add_argument("--write-json", action="store_true", help="сверить и обновить norms.json")
     args = parser.parse_args()
     from app.db import init_db
     from app.services import norms_store
@@ -338,7 +341,8 @@ def main() -> int:
     if args.apply:  # как при старте приложения: таблицы и стартовый снимок
         init_db()
         norms_store.seed()
-    before = norms_store.load_norms()
+    # Снимок сверяется сам по себе, без БД: иначе в git уехали бы правки конкретной инсталляции.
+    before = norms_store._from_file() if args.write_json else norms_store.load_norms()
     records, report = run(before)
     print(f"Сверено: {report['checked']}, изменено: {len(report['changed'])}")
     for r in report["changed"]:
@@ -348,6 +352,9 @@ def main() -> int:
     if args.apply and report["checked"]:
         norms_store.save(records, before)
         print("Изменения записаны в БД.")
+    if args.write_json and report["checked"]:
+        norms_store.write_file(records)
+        print(f"Записано в {norms_store.DATA / 'norms.json'}.")
     return 1 if report["changed"] else 0
 
 

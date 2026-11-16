@@ -6,6 +6,10 @@ on:
     tags: ["v*"]
   pull_request:
 
+# По умолчанию только чтение; права на запись выдаются точечно (публикация образов).
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -39,10 +43,29 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
+      - run: npm test
       - run: npm run build
 
+  # Известные уязвимости в зафиксированных версиях зависимостей блокируют публикацию образов.
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Бэкенд (pip-audit по uv.lock)
+        working-directory: backend
+        run: |
+          uv export --frozen --no-dev --no-emit-project --format requirements-txt -o "$RUNNER_TEMP/req.txt"
+          uvx pip-audit@2.10.1 -r "$RUNNER_TEMP/req.txt" --disable-pip
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Фронтенд (npm audit)
+        working-directory: frontend
+        run: npm audit --omit=dev --audit-level=high
+
   images:
-    needs: [backend, frontend]
+    needs: [backend, frontend, audit]
     runs-on: ubuntu-latest
     permissions:
       contents: read

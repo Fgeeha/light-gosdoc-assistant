@@ -20,7 +20,24 @@ def client():
 
 
 @pytest.fixture
+def anon():
+    """Отдельный клиент без cookie: сессионный client делит их между тестами."""
+    with TestClient(app) as c:
+        yield c
+
+
+@pytest.fixture
 def admin(client):
     r = client.post("/api/auth/login", json={"username": "admin", "password": "admin-password"})
     assert r.status_code == 200, r.text
     return client
+
+
+@pytest.fixture(autouse=True)
+def _reset_login_throttle():
+    # Счётчик неудачных входов живёт в памяти процесса и иначе копится между тестами.
+    from app.routers import auth
+
+    auth._failures.clear()
+    yield
+    auth._failures.clear()

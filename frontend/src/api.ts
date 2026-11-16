@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createSseParser, csvCell } from "./format";
 
 export type User = {
   id: number;
@@ -29,6 +30,8 @@ export type Norm = {
   replaced_by?: string | null;
   facts_count: number;
   verified: boolean;
+  updated_by?: string | null;
+  updated_at?: string | null;
 };
 
 export type NormUpdate = { norm_id: string; date: string; name: string; url: string };
@@ -87,24 +90,18 @@ async function stream(
   const r = await request(path, { method: "POST", json: body, signal });
   if (!r.body) throw new ApiError(r.status, "Пустой ответ сервера");
   const reader = r.body.pipeThrough(new TextDecoderStream()).getReader();
-  let buf = "";
+  const parse = createSseParser();
+  // Сервер всегда завершает поток событием done; без него соединение оборвалось на полпути.
+  let finished = false;
   for (;;) {
     const { value, done } = await reader.read();
     if (done) break;
-    buf += value;
-    let i;
-    while ((i = buf.indexOf("\n\n")) >= 0) {
-      const block = buf.slice(0, i);
-      buf = buf.slice(i + 2);
-      let event = "message";
-      let data = "";
-      for (const line of block.split("\n")) {
-        if (line.startsWith("event: ")) event = line.slice(7);
-        else if (line.startsWith("data: ")) data += line.slice(6);
-      }
-      onEvent(event, data ? JSON.parse(data) : null);
+    for (const { event, data } of parse(value)) {
+      if (event === "done") finished = true;
+      onEvent(event, data);
     }
   }
+  if (!finished) throw new ApiError(0, "Соединение прервано — результат неполный, повторите запрос");
 }
 
 export function useStream() {
@@ -156,9 +153,8 @@ export async function downloadDocx(text: string, filename: string) {
 }
 
 export function downloadCsv(columns: string[], rows: Record<string, string>[], filename: string) {
-  const esc = (v: string) => (/[";\n]/.test(v) ? `"${v.replaceAll('"', '""')}"` : v);
   const lines = [columns, ...rows.map((r) => columns.map((c) => r[c] ?? ""))].map((l) =>
-    l.map(esc).join(";"),
+    l.map(csvCell).join(";"),
   );
   // BOM и «;» — чтобы Excel с русской локалью открыл файл без мастера импорта.
   saveBlob(new Blob(["\ufeff" + lines.join("\r\n")], { type: "text/csv" }), `${filename}.csv`);

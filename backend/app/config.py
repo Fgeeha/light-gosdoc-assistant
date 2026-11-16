@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     secret_key: str = Field(min_length=32)
     session_ttl_minutes: int = 12 * 60
     cookie_secure: bool = False
+    # Swagger и схема API открыты без входа — включать только для разработки.
+    docs_enabled: bool = False
 
     # Первый администратор создаётся при старте, если пользователей нет.
     admin_username: str | None = None
@@ -24,6 +26,8 @@ class Settings(BaseSettings):
     llm_model: str = "qwen3:14b"
     llm_temperature: float = 0.2
     llm_timeout_seconds: float = 600
+    # Одновременных запросов к модели; остальные ждут очереди (обычно один GPU).
+    llm_max_concurrency: int = Field(default=2, ge=1)
     # true, если шаблон модели сам открывает <think> и в ответ приходит только «…</think>ответ».
     llm_think_prefilled: bool = False
     # Дополнительные поля тела запроса, например {"reasoning_effort": "none"}.

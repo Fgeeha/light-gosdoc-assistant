@@ -5,6 +5,7 @@
 """
 
 import re
+import time
 from datetime import date, datetime
 from typing import TypedDict
 
@@ -12,6 +13,9 @@ import httpx
 
 from app.services.normcheck import load_norms
 
+# HTTP осознанно: на 2026-11-16 порт 443 портала не отвечал (таймаут), HTTP — отвечал.
+# Ответ можно подменить на пути, поэтому список изменений — только подсказка юристу,
+# статус акта по нему автоматически не меняется. Перейти на https://, когда TLS заработает.
 PRAVO_BASE_URL = "http://publication.pravo.gov.ru"
 # Блоки публикации, где выходят изменения федеральных актов (…/api/PublicBlocks — весь список).
 DEFAULT_BLOCKS = ("president", "government", "federal_authorities")
@@ -33,16 +37,20 @@ def fetch_pravo_changes(
     since: date,
     blocks: tuple[str, ...] = DEFAULT_BLOCKS,
     norms: list[dict] | None = None,
+    deadline: float | None = None,
 ) -> list[Change]:
     """Опубликованные с даты since документы, чьи названия ссылаются на отслеживаемые акты.
 
     Фильтра по дате у API нет, поэтому документы листаются от новых к старым до даты since.
+    deadline — момент по time.monotonic(), после которого обход прерывается TimeoutError.
     """
     norms = norms if norms is not None else load_norms()
     hits: list[Change] = []
     seen: set[tuple[str, str]] = set()
     for block in blocks:
         for index in range(1, MAX_PAGES + 1):
+            if deadline is not None and time.monotonic() > deadline:
+                raise TimeoutError("Портал отвечает слишком долго")
             r = client.get(
                 "/api/Documents",
                 params={"block": block, "PageSize": PAGE_SIZE, "Index": index},

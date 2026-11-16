@@ -77,3 +77,18 @@ def test_change_keyword_filter_skips_primary_publications():
     api = httpx.Client(base_url="http://x", transport=httpx.MockTransport(make_handler(pages)))
     hits = sources.fetch_pravo_changes(api, date(2026, 10, 1), ("president",))
     assert hits == []  # первичная публикация без слов об изменении не попадает в отчёт
+
+
+def test_fetch_changes_stops_at_deadline():
+    import time
+
+    import pytest
+
+    endless = {
+        "president": [[doc(str(i), "2099-01-01", "О внесении изменений")] for i in range(50)]
+    }
+    api = httpx.Client(base_url="http://x", transport=httpx.MockTransport(make_handler(endless)))
+    with pytest.raises(TimeoutError):
+        sources.fetch_pravo_changes(
+            api, date(2026, 1, 1), ("president",), deadline=time.monotonic() - 1
+        )

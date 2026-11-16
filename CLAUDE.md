@@ -17,8 +17,8 @@ All from the repo root via `make` (it uses bash and sources `.env`; `make help` 
 make install                     # uv sync (backend) + npm ci (frontend)
 make run                         # backend on :8000, SQLite dev.db, LLM URL rewritten host.docker.internal→localhost
 make run-frontend                # Vite on :5173, proxies /api to :8000
-make check                       # ruff check + ruff format --check + tsc, then pytest
-make test                        # pytest only
+make check                       # ruff check + ruff format --check + tsc, then pytest + frontend node --test
+make test                        # pytest + frontend node --test (no tsc/ruff)
 cd backend && uv run pytest -q tests/test_app.py::test_examples_match_source_documents   # single test
 make format                      # ruff fix + format
 make up-local / down-local       # build images from source and run compose (site on HTTP_PORT, default 8080)
@@ -35,9 +35,13 @@ Tests run against SQLite with env set in `backend/tests/conftest.py`; the LLM is
 
 ## Architecture
 
-**Request flow:** browser → nginx (`frontend/nginx.conf`: SPA, `/api` proxy with buffering off for
-SSE, login rate limit, security headers repeated per `location` because `add_header` doesn't
-inherit) → FastAPI `backend/app` → Postgres (users only) and the LLM server.
+**Request flow:** browser → nginx (`frontend/nginx.conf.template`, rendered by the image's envsubst:
+SPA, `/api` proxy via `proxy-backend.inc` — it overwrites `X-Forwarded-For` with the real client IP
+because uvicorn trusts the header from anyone; SSE without buffering; per-IP limits on login and on
+`POST /api/tools/*` using the real IP from `set_real_ip_from ${TRUSTED_PROXY}`; `security-headers.inc`
+included in every `location` because `add_header` doesn't inherit) → FastAPI `backend/app` → Postgres (users, norms, `norm_changes`
+journal) and the LLM server. The app also locks an account after 5 failed logins in 15 minutes
+(in-memory, per process) and logs security events to the `gosdoc.audit` logger.
 
 **Auth:** JWT in an httpOnly `SameSite=Strict` cookie (`security.py`). The token carries
 `User.token_version`; bumping it (logout, password change) revokes all sessions. Passwords are

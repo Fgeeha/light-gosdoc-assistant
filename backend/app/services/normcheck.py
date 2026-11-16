@@ -5,15 +5,21 @@
 """
 
 import re
-from pathlib import Path
 from typing import Literal, TypedDict
 
 from app.llm import Message
-from app.services.norms_store import load_norms  # re-export: справочник теперь в norms_store
+from app.services.norms_store import DATA, load_norms  # re-export: справочник в norms_store
 
-DATA = Path(__file__).resolve().parent.parent / "data"
-
-__all__ = ["DATA", "Finding", "build_messages", "find_references", "load_norms", "needs_rewrite"]
+__all__ = [
+    "DATA",
+    "Finding",
+    "build_messages",
+    "find_references",
+    "load_norms",
+    "needs_rewrite",
+    "replaced_by_text",
+    "replacements",
+]
 
 # Ссылки, похожие на НПА, — чтобы честно сообщить «нет в базе».
 _GENERIC_REFS = re.compile(
@@ -39,6 +45,17 @@ class Finding(TypedDict):
     facts: list[str]
 
 
+def replacements(norm: dict) -> list[str]:
+    """Наименования актов-замен: replaced_by — строка или список (замена из нескольких актов)."""
+    value = norm.get("replaced_by") or []
+    return [value] if isinstance(value, str) else list(value)
+
+
+def replaced_by_text(norm: dict) -> str | None:
+    """Замены одной строкой — для справки модели и интерфейса."""
+    return "; ".join(replacements(norm)) or None
+
+
 def find_references(text: str) -> list[Finding]:
     """Находки по тексту в порядке появления: известные акты и неизвестные ссылки."""
     findings: list[Finding] = []
@@ -58,10 +75,11 @@ def find_references(text: str) -> list[Finding]:
                 position=matches[0].start(),
                 occurrences=len(matches),
                 since=n.get("since"),
-                replaced_by=n.get("replaced_by"),
+                replaced_by=replaced_by_text(n),
                 comment=n.get("comment"),
                 # Для отменённого акта — нормы того, что его заменил.
-                facts=n.get("facts") or by_title.get(n.get("replaced_by"), {}).get("facts", []),
+                facts=n.get("facts")
+                or [x for t in replacements(n) for x in by_title.get(t, {}).get("facts", [])],
             )
         )
     seen = set()
@@ -107,12 +125,16 @@ def _brief(findings: list[Finding]) -> str:
     for f in findings:
         if f["status"] == "unknown":
             continue
-        if f["status"] == "repealed":
-            line = (
-                f"- {f['title']} — УТРАТИЛ СИЛУ (с {f['since']}). Заменить на: {f['replaced_by']}."
-            )
-        elif f["status"] == "partially":
-            line = f"- {f['title']} — ПРИМЕНЯЕТСЯ ОГРАНИЧЕННО (с {f['since']}). Ссылаться на: {f['replaced_by']}."
+        if f["status"] in ("repealed", "partially"):
+            repealed = f["status"] == "repealed"
+            line = f"- {f['title']} — {'УТРАТИЛ СИЛУ' if repealed else 'ПРИМЕНЯЕТСЯ ОГРАНИЧЕННО'}"
+            # since/replaced_by могут быть пустыми после правки статуса из админки.
+            if f["since"]:
+                line += f" (с {f['since']})"
+            if f["replaced_by"]:
+                line += f". {'Заменить на' if repealed else 'Ссылаться на'}: {f['replaced_by']}."
+            else:
+                line += ". Замена в справочнике не указана."
         else:
             line = f"- {f['title']} — действует."
         if f.get("comment"):

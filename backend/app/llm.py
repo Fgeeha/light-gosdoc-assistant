@@ -1,6 +1,8 @@
 """Клиент OpenAI-совместимого API (/v1/chat/completions)."""
 
+import asyncio
 import json
+import logging
 import re
 from collections.abc import AsyncIterator
 from typing import Literal, TypedDict
@@ -10,6 +12,9 @@ import httpx
 from app.config import get_settings
 
 _THINK_OPEN, _THINK_CLOSE = "<think>", "</think>"
+logger = logging.getLogger(__name__)
+# ponytail: семафор на процесс; при нескольких воркерах лимит умножается на их число.
+_slots: asyncio.Semaphore | None = None
 
 
 class LLMError(RuntimeError):
@@ -80,22 +85,42 @@ async def strip_think(chunks: AsyncIterator[str], inside: bool = False) -> Async
         yield buf
 
 
+def _slot() -> asyncio.Semaphore:
+    global _slots
+    if _slots is None:
+        _slots = asyncio.Semaphore(get_settings().llm_max_concurrency)
+    return _slots
+
+
 async def _raw_stream(messages: list[Message], model: str | None) -> AsyncIterator[str]:
+    async with _slot():  # слот держится, пока идёт генерация
+        async for delta in _unlimited_stream(messages, model):
+            yield delta
+
+
+async def _unlimited_stream(messages: list[Message], model: str | None) -> AsyncIterator[str]:
     url, headers, body = _request(messages, model, stream=True)
     timeout = httpx.Timeout(get_settings().llm_timeout_seconds, connect=10)
     try:
         async with httpx.AsyncClient(timeout=timeout) as client:
             async with client.stream("POST", url, json=body, headers=headers) as r:
                 if r.status_code >= 400:
+                    # Тело ответа — в лог: у облачных провайдеров там бывают детали аккаунта.
                     detail = (await r.aread()).decode(errors="replace")[:500]
-                    raise LLMError(f"LLM вернула {r.status_code}: {detail}")
+                    logger.warning("Сервер модели ответил %s: %s", r.status_code, detail)
+                    raise LLMError(f"Сервер модели вернул ошибку {r.status_code}")
                 async for line in r.aiter_lines():
                     if not line.startswith("data:"):
                         continue
                     data = line[5:].strip()
                     if data == "[DONE]":
                         break
-                    choices = json.loads(data).get("choices") or [{}]
+                    try:
+                        chunk = json.loads(data)
+                    except json.JSONDecodeError as e:
+                        logger.warning("Некорректная строка потока модели: %r", data[:200])
+                        raise LLMError("Сервер модели вернул некорректный поток") from e
+                    choices = chunk.get("choices") or [{}]
                     # reasoning/reasoning_content намеренно игнорируются.
                     if delta := (choices[0].get("delta") or {}).get("content"):
                         yield delta

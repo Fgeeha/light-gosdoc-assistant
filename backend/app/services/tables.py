@@ -4,7 +4,7 @@ import csv
 import io
 import json
 
-from app.llm import Message
+from app.llm import LLMError, Message
 
 MAX_ROWS = 500
 CHUNK_ROWS = 15
@@ -35,10 +35,14 @@ def parse_table(text: str) -> tuple[list[str], list[dict]]:
     else:
         dialect_args = {}
     reader = csv.reader(io.StringIO(text), dialect, **dialect_args)
-    header = [h.strip() for h in next(reader)]
+    try:
+        header = [h.strip() for h in next(reader)]
+        raw = [r for r in reader if any(c.strip() for c in r)]
+    except csv.Error as e:
+        # Незакрытая кавычка, NUL-байт, слишком длинное поле.
+        raise ValueError(f"Не удалось разобрать таблицу: {e}") from e
     if not all(header) or len(set(header)) != len(header):
         raise ValueError("Заголовки колонок должны быть непустыми и не повторяться")
-    raw = [r for r in reader if any(c.strip() for c in r)]
     if any(len(r) > len(header) for r in raw):
         raise ValueError("В некоторых строках больше значений, чем колонок в заголовке")
     rows = [dict(zip(header, (c.strip() for c in r), strict=False)) for r in raw]
@@ -66,11 +70,11 @@ def normalize_result(data: dict, columns: list[str], expected: int) -> list[dict
     """Приводит ответ модели к ровно `expected` строкам с нужными колонками."""
     rows = data.get("rows") if isinstance(data, dict) else None
     if not isinstance(rows, list):
-        raise ValueError("В ответе модели нет массива rows")
+        raise LLMError("В ответе модели нет массива rows")
     out = []
     for r in rows[:expected]:
         r = r if isinstance(r, dict) else {}
         out.append({c: "" if r.get(c) is None else str(r.get(c)).strip() for c in columns})
     if len(out) != expected:
-        raise ValueError(f"Модель вернула {len(out)} строк вместо {expected}")
+        raise LLMError(f"Модель вернула {len(out)} строк вместо {expected}")
     return out

@@ -23,7 +23,7 @@ _DUMMY_HASH = bcrypt.hashpw(b"dummy-password", bcrypt.gensalt()).decode()
 
 def hash_password(password: str) -> str:
     if len(password.encode()) > MAX_PASSWORD_BYTES:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Пароль длиннее 72 байт")
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Пароль длиннее 72 байт")
     return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
 

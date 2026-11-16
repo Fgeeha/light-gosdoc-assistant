@@ -8,6 +8,7 @@ from urllib.parse import quote
 
 import httpx
 from fastapi import APIRouter, HTTPException, UploadFile, status
+from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import FileResponse, Response, StreamingResponse
 
 from app import llm
@@ -30,7 +31,8 @@ def _stream(events: AsyncIterator[str]) -> StreamingResponse:
         try:
             async for e in events:
                 yield e
-        except (llm.LLMError, ValueError) as e:
+        except llm.LLMError as e:
+            # Только ошибки, текст которых написан для пользователя; остальное — в лог.
             yield _sse("error", {"message": str(e)})
         except Exception:
             logger.exception("Ошибка обработки запроса")
@@ -101,7 +103,7 @@ def table(body: TableIn, _: CurrentUser) -> StreamingResponse:
     try:
         header, rows = tables.parse_table(body.source)
     except ValueError as e:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, str(e)) from e
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(e)) from e
     columns = [c.strip() for c in body.columns if c.strip()]
     parts = tables.chunks(rows)
 
@@ -121,14 +123,15 @@ async def extract(file: UploadFile, _: CurrentUser) -> dict:
     if len(data) > files.MAX_BYTES:
         raise HTTPException(status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, "Файл больше 10 МБ")
     try:
-        return {"text": files.extract_text(file.filename or "", data)}
+        # Разбор docx/pdf синхронный и тяжёлый — вне цикла событий, чтобы не вставали потоки.
+        return {"text": await run_in_threadpool(files.extract_text, file.filename or "", data)}
     except ValueError as e:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, str(e)) from e
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(e)) from e
     except Exception as e:
         # Парсеры docx/pdf бросают разнородные исключения на повреждённых файлах.
-        logger.warning("Не удалось прочитать файл %s: %r", file.filename, e)
+        logger.warning("Не удалось прочитать файл %r: %r", file.filename, e)
         raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY, "Не удалось прочитать файл"
+            status.HTTP_422_UNPROCESSABLE_CONTENT, "Не удалось прочитать файл"
         ) from e
 
 

@@ -25,7 +25,7 @@ install: ## Установить зависимости бэкенда и фро
 # --- Запуск -----------------------------------------------------------------
 
 run: ## Запустить бэкенд локально (SQLite, переменные из .env)
-	cd backend && $(HOST_ENV) && DATABASE_URL=sqlite:///./dev.db uv run uvicorn app.main:app --reload
+	cd backend && $(HOST_ENV) && DATABASE_URL=sqlite:///./dev.db DOCS_ENABLED=true uv run uvicorn app.main:app --reload
 
 run-frontend: ## Запустить фронтенд в режиме разработки (прокси /api на :8000)
 	cd frontend && npm run dev
@@ -39,8 +39,9 @@ lint: ## Проверить код (ruff, tsc)
 format: ## Отформатировать код бэкенда
 	cd backend && uv run ruff check --fix . && uv run ruff format .
 
-test: ## Прогнать тесты бэкенда
+test: ## Прогнать тесты бэкенда и фронтенда
 	cd backend && uv run pytest -q
+	cd frontend && npm test
 
 check: lint test ## Линт и тесты
 

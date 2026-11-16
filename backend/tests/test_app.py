@@ -121,7 +121,7 @@ def test_find_references_does_not_confuse_numbers():
     assert [(f["norm_id"], f["status"]) for f in found] == [
         ("fz-152", "active"),
         (None, "unknown"),
-        ("gost-7.0.97-2016", "active"),
+        ("gost-7.0.97-2016", "repealed"),
         (None, "unknown"),
     ]
 

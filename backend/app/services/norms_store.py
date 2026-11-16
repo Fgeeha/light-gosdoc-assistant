@@ -38,6 +38,49 @@ def _from_file() -> list[dict]:
     return json.loads((DATA / "norms.json").read_text(encoding="utf-8"))["norms"]
 
 
+def dump_json(doc: dict, width: int = 160) -> str:
+    """norms.json в стиле файла: отступ 2, список в строку, если строка не длиннее width.
+
+    Так правка снимка скриптом даёт в git только содержательный diff.
+    """
+    j = lambda v: json.dumps(v, ensure_ascii=False)  # noqa: E731
+
+    def field(key: str, value: object, indent: str, last: bool) -> list[str]:
+        comma = "" if last else ","
+        line = f"{indent}{j(key)}: {j(value)}{comma}"
+        if not isinstance(value, list) or len(line) <= width:
+            return [line]
+        items = [f"{indent}  {j(x)}," for x in value]
+        items[-1] = items[-1][:-1]
+        return [f"{indent}{j(key)}: [", *items, f"{indent}]{comma}"]
+
+    out = ["{"]
+    for i, key in enumerate(doc):
+        last = i == len(doc) - 1
+        if key != "norms":
+            out += field(key, doc[key], "  ", last)
+            continue
+        out.append('  "norms": [')
+        for k, n in enumerate(doc["norms"]):
+            out.append("    {")
+            for m, name in enumerate(n):
+                out += field(name, n[name], "      ", m == len(n) - 1)
+            out.append("    }" + ("," if k < len(doc["norms"]) - 1 else ""))
+        out.append("  ]" + ("" if last else ","))
+    return "\n".join([*out, "}"]) + "\n"
+
+
+def write_file(records: list[dict]) -> None:
+    """Записать снимок norms.json (без регулярок и служебных полей правки/сверки)."""
+    path = DATA / "norms.json"
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    doc["norms"] = [
+        {k: v for k, v in n.items() if not k.startswith("_") and k not in ADMIN_FIELDS}
+        for n in records
+    ]
+    path.write_text(dump_json(doc), encoding="utf-8")
+
+
 @lru_cache
 def load_norms() -> list[dict]:
     """Актуальный справочник со скомпилированными регулярками.

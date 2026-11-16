@@ -1,5 +1,6 @@
 """Клиент OpenAI-совместимого API (/v1/chat/completions)."""
 
+import asyncio
 import json
 import logging
 import re
@@ -12,6 +13,8 @@ from app.config import get_settings
 
 _THINK_OPEN, _THINK_CLOSE = "<think>", "</think>"
 logger = logging.getLogger(__name__)
+# ponytail: семафор на процесс; при нескольких воркерах лимит умножается на их число.
+_slots: asyncio.Semaphore | None = None
 
 
 class LLMError(RuntimeError):
@@ -82,7 +85,20 @@ async def strip_think(chunks: AsyncIterator[str], inside: bool = False) -> Async
         yield buf
 
 
+def _slot() -> asyncio.Semaphore:
+    global _slots
+    if _slots is None:
+        _slots = asyncio.Semaphore(get_settings().llm_max_concurrency)
+    return _slots
+
+
 async def _raw_stream(messages: list[Message], model: str | None) -> AsyncIterator[str]:
+    async with _slot():  # слот держится, пока идёт генерация
+        async for delta in _unlimited_stream(messages, model):
+            yield delta
+
+
+async def _unlimited_stream(messages: list[Message], model: str | None) -> AsyncIterator[str]:
     url, headers, body = _request(messages, model, stream=True)
     timeout = httpx.Timeout(get_settings().llm_timeout_seconds, connect=10)
     try:

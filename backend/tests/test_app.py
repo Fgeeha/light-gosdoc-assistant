@@ -244,6 +244,37 @@ def test_table_endpoint_streams_rows(admin, monkeypatch):
     assert events[-1][0] == "done"
 
 
+def test_llm_calls_are_limited(monkeypatch):
+    from app.config import get_settings
+
+    active = peak = 0
+
+    async def server(request: httpx.Request) -> httpx.Response:
+        nonlocal active, peak
+        active += 1
+        peak = max(peak, active)
+        await asyncio.sleep(0.05)
+        active -= 1
+        body = 'data: {"choices": [{"delta": {"content": "ok"}}]}\n\ndata: [DONE]\n\n'
+        return httpx.Response(200, text=body)
+
+    real = httpx.AsyncClient
+    monkeypatch.setattr(
+        llm.httpx, "AsyncClient", lambda **kw: real(transport=httpx.MockTransport(server), **kw)
+    )
+    monkeypatch.setattr(llm, "_slots", None)
+    monkeypatch.setattr(get_settings(), "llm_max_concurrency", 1)
+
+    async def one():
+        return "".join([c async for c in llm.stream_chat([{"role": "user", "content": "x"}])])
+
+    async def three():
+        return await asyncio.gather(one(), one(), one())
+
+    assert asyncio.run(three()) == ["ok"] * 3
+    assert peak == 1
+
+
 def test_llm_errors_do_not_leak_details(admin, monkeypatch):
     def server(request: httpx.Request) -> httpx.Response:
         if request.url.path.endswith("/broken/v1/chat/completions"):

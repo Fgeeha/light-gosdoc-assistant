@@ -43,11 +43,13 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     yield
 
 
+_docs = get_settings().docs_enabled
 app = FastAPI(
     title="ГосДок Ассистент",
     lifespan=lifespan,
-    docs_url="/api/docs",
-    openapi_url="/api/openapi.json",
+    docs_url="/api/docs" if _docs else None,
+    redoc_url=None,
+    openapi_url="/api/openapi.json" if _docs else None,
 )
 app.include_router(auth.router)
 app.include_router(admin.router)

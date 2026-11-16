@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     secret_key: str = Field(min_length=32)
     session_ttl_minutes: int = 12 * 60
     cookie_secure: bool = False
+    # Swagger и схема API открыты без входа — включать только для разработки.
+    docs_enabled: bool = False
 
     # Первый администратор создаётся при старте, если пользователей нет.
     admin_username: str | None = None

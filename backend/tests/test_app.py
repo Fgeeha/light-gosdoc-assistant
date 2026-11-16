@@ -59,6 +59,11 @@ def test_admin_creates_user_who_can_login_but_not_administer(admin):
     assert admin.delete(f"/api/admin/users/{uid}").status_code == 204
 
 
+def test_api_docs_disabled_by_default(client):
+    assert client.get("/api/openapi.json").status_code == 404
+    assert client.get("/api/docs").status_code == 404
+
+
 def test_admin_cannot_lock_self(admin):
     me = admin.get("/api/auth/me").json()
     assert admin.patch(f"/api/admin/users/{me['id']}", json={"is_admin": False}).status_code == 400

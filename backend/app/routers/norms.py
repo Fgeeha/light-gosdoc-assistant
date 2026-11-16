@@ -7,12 +7,12 @@
 
 import time
 from datetime import UTC, date, datetime, timedelta
-from typing import Literal
+from typing import Annotated, Literal
 
 import httpx
 from fastapi import APIRouter, HTTPException, Query, status
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import select
 
 from app.db import Norm, NormChange
@@ -60,10 +60,14 @@ def _to_out(n: dict) -> NormOut:
 
 class NormPatch(BaseModel):
     status: Literal["active", "repealed", "partially"] | None = None
-    since: str | None = None
+    # Как в norms.json: год («2006») или дата («01.07.2018»).
+    since: str | None = Field(default=None, pattern=r"^(\d{4}|\d{2}\.\d{2}\.\d{4})$")
     # Строка или список наименований, если акт заменён несколькими.
     replaced_by: str | list[str] | None = None
-    facts: list[str] | None = None
+    # Нормы уходят в подсказку модели — ограничиваем объём.
+    facts: list[Annotated[str, Field(min_length=1, max_length=1000)]] | None = Field(
+        default=None, max_length=30
+    )
     # Отметка «проверено юристом»: правка из UI подтверждает запись.
     verified: bool = True
 

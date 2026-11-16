@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Response, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 
 from app.db import User
 from app.schemas import LoginIn, UserOut
@@ -10,7 +10,8 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 @router.post("/login", response_model=UserOut)
 def login(body: LoginIn, response: Response, db: DB) -> User:
-    user = db.scalar(select(User).where(User.username == body.username.strip()))
+    login_name = body.username.strip().lower()
+    user = db.scalar(select(User).where(func.lower(User.username) == login_name).limit(1))
     if not verify_password(body.password, user.password_hash if user else None) or user is None:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Неверный логин или пароль")
     if not user.is_active:

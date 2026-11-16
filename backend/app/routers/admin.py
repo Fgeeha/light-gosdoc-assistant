@@ -1,9 +1,10 @@
-from fastapi import APIRouter, HTTPException, status
-from sqlalchemy import select
+from fastapi import APIRouter, HTTPException, Response, status
+from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 
 from app.db import User
 from app.schemas import UserCreate, UserOut, UserUpdate
-from app.security import DB, AdminUser, hash_password
+from app.security import DB, AdminUser, hash_password, set_session_cookie
 
 router = APIRouter(prefix="/api/admin/users", tags=["admin"])
 
@@ -22,8 +23,10 @@ def list_users(_: AdminUser, db: DB) -> list[User]:
 
 @router.post("", response_model=UserOut, status_code=status.HTTP_201_CREATED)
 def create_user(body: UserCreate, _: AdminUser, db: DB) -> User:
-    if db.scalar(select(User).where(User.username == body.username)):
-        raise HTTPException(status.HTTP_409_CONFLICT, "Логин уже занят")
+    # Логины сравниваются без учёта регистра: «Ivanov» и «ivanov» — один человек.
+    taken = HTTPException(status.HTTP_409_CONFLICT, "Логин уже занят")
+    if db.scalar(select(User).where(func.lower(User.username) == body.username.lower())):
+        raise taken
     user = User(
         username=body.username,
         full_name=body.full_name.strip(),
@@ -31,12 +34,18 @@ def create_user(body: UserCreate, _: AdminUser, db: DB) -> User:
         is_admin=body.is_admin,
     )
     db.add(user)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:  # тот же логин создан параллельным запросом
+        db.rollback()
+        raise taken from None
     return user
 
 
 @router.patch("/{user_id}", response_model=UserOut)
-def update_user(user_id: int, body: UserUpdate, admin: AdminUser, db: DB) -> User:
+def update_user(
+    user_id: int, body: UserUpdate, admin: AdminUser, db: DB, response: Response
+) -> User:
     user = _get(db, user_id)
     if user.id == admin.id and (body.is_admin is False or body.is_active is False):
         raise HTTPException(
@@ -46,12 +55,14 @@ def update_user(user_id: int, body: UserUpdate, admin: AdminUser, db: DB) -> Use
         user.full_name = body.full_name.strip()
     if body.password is not None:
         user.password_hash = hash_password(body.password)
-        user.token_version += 1
+        user.token_version += 1  # завершает все сессии пользователя
     if body.is_admin is not None:
         user.is_admin = body.is_admin
     if body.is_active is not None:
         user.is_active = body.is_active
     db.commit()
+    if body.password is not None and user.id == admin.id:
+        set_session_cookie(response, user)  # иначе администратор выкинет из системы сам себя
     return user
 
 

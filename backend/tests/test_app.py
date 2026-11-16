@@ -469,3 +469,25 @@ def test_seed_merges_file_without_overwriting_admin_edits(admin):
     assert by_id["fz-59"]["status"] == "repealed"
     assert by_id["fz-152"]["status"] == "active"
     admin.patch("/api/admin/norms/fz-59", json={"status": "active"})
+
+
+def test_norm_patch_validates_since_and_facts(admin):
+    assert admin.patch("/api/admin/norms/fz-152", json={"since": "вчера"}).status_code == 422
+    assert admin.patch("/api/admin/norms/fz-152", json={"facts": ["x"] * 31}).status_code == 422
+    assert admin.patch("/api/admin/norms/fz-152", json={"facts": [""]}).status_code == 422
+
+
+def test_usernames_are_case_insensitive(admin):
+    body = {"username": "Petrov", "password": "petrov-password"}
+    assert admin.post("/api/admin/users", json=body).status_code == 201
+    assert admin.post("/api/admin/users", json=body | {"username": "petrov"}).status_code == 409
+    with TestClient(app) as c:
+        r = c.post("/api/auth/login", json={"username": "PETROV", "password": "petrov-password"})
+        assert r.status_code == 200
+
+
+def test_admin_changing_own_password_stays_logged_in(admin):
+    me = admin.get("/api/auth/me").json()
+    r = admin.patch(f"/api/admin/users/{me['id']}", json={"password": "admin-password"})
+    assert r.status_code == 200
+    assert admin.get("/api/auth/me").status_code == 200

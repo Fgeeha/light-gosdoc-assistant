@@ -17,7 +17,7 @@ All from the repo root via `make` (it uses bash and sources `.env`; `make help` 
 make install                     # uv sync (backend) + npm ci (frontend)
 make run                         # backend on :8000, SQLite dev.db, LLM URL rewritten host.docker.internal→localhost
 make run-frontend                # Vite on :5173, proxies /api to :8000
-make check                       # ruff check + ruff format --check + tsc, then pytest
+make check                       # ruff check + ruff format --check + tsc, then pytest + frontend node --test
 make test                        # pytest only
 cd backend && uv run pytest -q tests/test_app.py::test_examples_match_source_documents   # single test
 make format                      # ruff fix + format

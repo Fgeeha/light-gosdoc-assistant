@@ -39,8 +39,9 @@ lint: ## Проверить код (ruff, tsc)
 format: ## Отформатировать код бэкенда
 	cd backend && uv run ruff check --fix . && uv run ruff format .
 
-test: ## Прогнать тесты бэкенда
+test: ## Прогнать тесты бэкенда и фронтенда
 	cd backend && uv run pytest -q
+	cd frontend && npm test
 
 check: lint test ## Линт и тесты
 

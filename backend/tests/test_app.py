@@ -299,3 +299,5 @@ def test_admin_norm_edit_persists_and_affects_check(admin):
     assert admin.patch("/api/admin/norms/fz-000", json={"status": "active"}).status_code == 404
     r = admin.patch("/api/admin/norms/fz-152", json={"replaced_by": "Закон о чём-то"})
     assert r.status_code == 422
+    # verified: null раньше давало 500 при сборке ответа.
+    assert admin.patch("/api/admin/norms/fz-152", json={"verified": None}).status_code == 422

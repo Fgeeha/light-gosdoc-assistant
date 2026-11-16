@@ -1,8 +1,7 @@
-"""Справочник нормативных актов для администратора: просмотр и проверка обновлений.
+"""Справочник нормативных актов для администратора.
 
-Правка справочника пока только в norms.json (см. docs/NORMS.md): файл запекается в образ,
-а изменение статуса должно проходить через юриста. Здесь — чтение справочника и поиск
-опубликованных изменений по pravo.gov.ru, чтобы было видно, что пора проверить.
+Просмотр, правка статуса записи (PATCH, хранится в БД — см. services/norms_store) и поиск
+опубликованных изменений по pravo.gov.ru, чтобы было видно, какие акты пора проверить.
 """
 
 from datetime import date, timedelta
@@ -30,13 +29,26 @@ class NormOut(BaseModel):
     verified: bool
 
 
+def _to_out(n: dict) -> NormOut:
+    return NormOut(
+        id=n["id"],
+        title=n["title"],
+        status=n["status"],
+        since=n.get("since"),
+        replaced_by=n.get("replaced_by"),
+        facts_count=len(n.get("facts") or []),
+        # Записи без явного флага считаются проверенными (исходные акты справочника).
+        verified=n.get("verified", True),
+    )
+
+
 class NormPatch(BaseModel):
     status: Literal["active", "repealed", "partially"] | None = None
     since: str | None = None
     replaced_by: str | None = None
     facts: list[str] | None = None
     # Отметка «проверено юристом»: правка из UI подтверждает запись.
-    verified: bool | None = None
+    verified: bool = True
 
 
 class Update(BaseModel):
@@ -48,19 +60,7 @@ class Update(BaseModel):
 
 @router.get("", response_model=list[NormOut])
 def list_norms(_: AdminUser) -> list[NormOut]:
-    return [
-        NormOut(
-            id=n["id"],
-            title=n["title"],
-            status=n["status"],
-            since=n.get("since"),
-            replaced_by=n.get("replaced_by"),
-            facts_count=len(n.get("facts") or []),
-            # Записи без явного флага считаются проверенными (исходные 19 актов).
-            verified=n.get("verified", True),
-        )
-        for n in load_norms()
-    ]
+    return [_to_out(n) for n in load_norms()]
 
 
 @router.patch("/{norm_id}", response_model=NormOut)
@@ -85,19 +85,11 @@ def update_norm(norm_id: str, body: NormPatch, _: AdminUser, db: DB) -> NormOut:
             else:
                 data[key] = changes[key]
     # Любая правка из UI — это подтверждение записи, если прямо не сказано иное.
-    data["verified"] = changes.get("verified", True)
+    data["verified"] = body.verified
     row.data = data
     db.commit()
     norms_store.refresh()
-    return NormOut(
-        id=data["id"],
-        title=data["title"],
-        status=data["status"],
-        since=data.get("since"),
-        replaced_by=data.get("replaced_by"),
-        facts_count=len(data.get("facts") or []),
-        verified=data["verified"],
-    )
+    return _to_out(data)
 
 
 @router.get("/updates", response_model=list[Update])

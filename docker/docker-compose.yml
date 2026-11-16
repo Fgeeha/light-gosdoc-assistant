@@ -1,6 +1,10 @@
 # Запуск: make up-local (сборка из исходников) или make up-prod (образы из GHCR).
 name: gosdoc
 
+# Общие ограничения: процесс не может повысить привилегии (setuid и т. п.).
+x-hardening: &hardening
+  security_opt: ["no-new-privileges:true"]
+
 services:
   db:
     image: postgres:17-alpine
@@ -14,6 +18,11 @@ services:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
       retries: 10
+    <<: *hardening
+    deploy:
+      resources:
+        limits:
+          memory: 1g
     restart: unless-stopped
 
   backend:
@@ -28,6 +37,16 @@ services:
     # Доступ к Ollama/vLLM, запущенным на хосте: LLM_BASE_URL=http://host.docker.internal:11434/v1
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    # Порт бэкенда наружу не публикуется: uvicorn доверяет X-Forwarded-For от любого адреса
+    # (--forwarded-allow-ips "*"), что безопасно, только пока до него доходит лишь nginx.
+    <<: *hardening
+    cap_drop: [ALL]
+    read_only: true
+    tmpfs: [/tmp]  # временные файлы загрузок (python-multipart)
+    deploy:
+      resources:
+        limits:
+          memory: 2g  # разбор PDF/DOCX; потолок не даёт «бомбе» уронить хост
     restart: unless-stopped
 
   frontend:
@@ -40,6 +59,16 @@ services:
       - "${HTTP_PORT:-8080}:8080"
     depends_on:
       - backend
+    <<: *hardening
+    cap_drop: [ALL]
+    read_only: true
+    tmpfs:
+      - /tmp:mode=1777
+      - /etc/nginx/conf.d:mode=1777  # сюда envsubst пишет конфиг из шаблона
+    deploy:
+      resources:
+        limits:
+          memory: 256m
     restart: unless-stopped
 
   # Модель в контейнере на GPU: COMPOSE_PROFILES=ollama и LLM_BASE_URL=http://ollama:11434/v1

@@ -60,10 +60,20 @@ export default function Norms() {
           title="Справочник актов"
           lead="По этой базе проверка находит ссылки на акты. Статус можно изменить здесь — правка сохраняется и сразу влияет на проверку. Изменения в актах отслеживаются по порталу опубликования pravo.gov.ru."
         />
-        <Button onClick={check} disabled={checking}>
-          {checking ? <Spinner /> : null}
-          Проверить обновления
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          {/* Рабочий справочник — в БД; выгрузка нужна для git, скриптов сверки и резервной копии. */}
+          <a
+            href="/api/admin/norms/export"
+            download="norms.json"
+            className="inline-flex items-center rounded-md border border-line bg-white px-4 py-2 text-sm font-medium text-ink hover:border-ink/40"
+          >
+            Выгрузить norms.json
+          </a>
+          <Button onClick={check} disabled={checking}>
+            {checking ? <Spinner /> : null}
+            Проверить обновления
+          </Button>
+        </div>
       </div>
       {error && (
         <div className="mb-4">
@@ -139,6 +149,12 @@ export default function Norms() {
                       <span className="ml-2 whitespace-nowrap rounded-full bg-[#8A5B00]/10 px-2 py-0.5 text-[11px] text-[#8A5B00]">
                         не проверено
                       </span>
+                    )}
+                    {n.updated_by && (
+                      <div className="mt-0.5 text-[12px] text-muted">
+                        Изменено: {n.updated_by}
+                        {n.updated_at && `, ${new Date(n.updated_at).toLocaleString("ru-RU")}`}
+                      </div>
                     )}
                   </td>
                   <td className="border-b border-line px-4 py-2.5">

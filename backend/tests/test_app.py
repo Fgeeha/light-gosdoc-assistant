@@ -431,3 +431,42 @@ def test_admin_norm_edit_persists_and_affects_check(admin):
     assert r.status_code == 422
     # verified: null раньше давало 500 при сборке ответа.
     assert admin.patch("/api/admin/norms/fz-152", json={"verified": None}).status_code == 422
+
+
+def test_norm_edit_is_journaled_and_exported(admin):
+    r = admin.patch("/api/admin/norms/fz-149", json={"facts": ["Тестовая норма."]})
+    assert r.status_code == 200 and r.json()["updated_by"] == "admin"
+    history = admin.get("/api/admin/norms/fz-149/history").json()
+    assert history[0]["changed_by"] == "admin"
+    assert "facts" not in history[0]["before"] or history[0]["before"]["facts"] != [
+        "Тестовая норма."
+    ]
+    assert history[0]["after"]["facts"] == ["Тестовая норма."]
+
+    exported = admin.get("/api/admin/norms/export")
+    assert "attachment" in exported.headers["content-disposition"]
+    norms = {n["id"]: n for n in exported.json()["norms"]}
+    assert norms["fz-149"]["facts"] == ["Тестовая норма."]
+    assert not any(k.startswith("_") for n in norms.values() for k in n)
+
+
+def test_seed_merges_file_without_overwriting_admin_edits(admin):
+    from app.db import Norm, SessionLocal
+    from app.services import norms_store
+
+    admin.patch("/api/admin/norms/fz-59", json={"comment": None, "verified": True})
+    with SessionLocal() as s:
+        s.delete(s.get(Norm, "fz-125"))  # как будто запись появилась в файле позже
+        edited = s.get(Norm, "fz-59")
+        edited.data = edited.data | {"status": "repealed"}  # правка юриста
+        untouched = s.get(Norm, "fz-152")
+        untouched.data = {k: v for k, v in untouched.data.items() if k != "updated_by"} | {
+            "status": "repealed"
+        }  # устаревшая копия без правок
+        s.commit()
+    norms_store.seed()
+    by_id = {n["id"]: n for n in norms_store.load_norms()}
+    assert "fz-125" in by_id
+    assert by_id["fz-59"]["status"] == "repealed"
+    assert by_id["fz-152"]["status"] == "active"
+    admin.patch("/api/admin/norms/fz-59", json={"status": "active"})

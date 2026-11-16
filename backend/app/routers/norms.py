@@ -1,18 +1,21 @@
 """Справочник нормативных актов для администратора.
 
-Просмотр, правка статуса записи (PATCH, хранится в БД — см. services/norms_store) и поиск
-опубликованных изменений по pravo.gov.ru, чтобы было видно, какие акты пора проверить.
+Просмотр, правка записи (PATCH, хранится в БД — см. services/norms_store) с журналом правок,
+выгрузка в формате norms.json и поиск опубликованных изменений по pravo.gov.ru, чтобы было
+видно, какие акты пора проверить.
 """
 
 import time
-from datetime import date, timedelta
+from datetime import UTC, date, datetime, timedelta
 from typing import Literal
 
 import httpx
 from fastapi import APIRouter, HTTPException, Query, status
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+from sqlalchemy import select
 
-from app.db import Norm
+from app.db import Norm, NormChange
 from app.security import DB, AdminUser
 from app.services import norms_store, sources
 from app.services.normcheck import load_norms
@@ -29,6 +32,15 @@ class NormOut(BaseModel):
     replaced_by: str | None = None
     facts_count: int
     verified: bool
+    updated_by: str | None = None
+    updated_at: str | None = None
+
+
+class NormChangeOut(BaseModel):
+    changed_by: str
+    changed_at: datetime
+    before: dict
+    after: dict
 
 
 def _to_out(n: dict) -> NormOut:
@@ -41,6 +53,8 @@ def _to_out(n: dict) -> NormOut:
         facts_count=len(n.get("facts") or []),
         # Записи без явного флага считаются проверенными (исходные акты справочника).
         verified=n.get("verified", True),
+        updated_by=n.get("updated_by"),
+        updated_at=n.get("updated_at"),
     )
 
 
@@ -66,7 +80,7 @@ def list_norms(_: AdminUser) -> list[NormOut]:
 
 
 @router.patch("/{norm_id}", response_model=NormOut)
-def update_norm(norm_id: str, body: NormPatch, _: AdminUser, db: DB) -> NormOut:
+def update_norm(norm_id: str, body: NormPatch, admin: AdminUser, db: DB) -> NormOut:
     row = db.get(Norm, norm_id)
     if row is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Акт не найден в справочнике")
@@ -88,10 +102,34 @@ def update_norm(norm_id: str, body: NormPatch, _: AdminUser, db: DB) -> NormOut:
                 data[key] = changes[key]
     # Любая правка из UI — это подтверждение записи, если прямо не сказано иное.
     data["verified"] = body.verified
+    # Отметка правки: seed() не перезапишет такую запись из norms.json.
+    data["updated_by"] = admin.username
+    data["updated_at"] = datetime.now(UTC).isoformat(timespec="seconds")
+    db.add(NormChange(norm_id=norm_id, changed_by=admin.username, before=row.data, after=data))
     row.data = data
     db.commit()
     norms_store.refresh()
     return _to_out(data)
+
+
+@router.get("/export")
+def export_norms(_: AdminUser) -> JSONResponse:
+    """Текущий справочник в формате norms.json: для git, сверки скриптами и резервной копии."""
+    return JSONResponse(
+        {"norms": norms_store.export()},
+        headers={"Content-Disposition": 'attachment; filename="norms.json"'},
+    )
+
+
+@router.get("/{norm_id}/history", response_model=list[NormChangeOut])
+def norm_history(norm_id: str, _: AdminUser, db: DB) -> list[NormChange]:
+    return list(
+        db.scalars(
+            select(NormChange)
+            .where(NormChange.norm_id == norm_id)
+            .order_by(NormChange.changed_at.desc(), NormChange.id.desc())
+        )
+    )
 
 
 @router.get("/updates", response_model=list[Update])

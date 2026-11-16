@@ -130,12 +130,14 @@ def check(api: httpx.Client, norms: list[dict], since: date) -> list[str]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--since", type=date.fromisoformat, default=date.today() - timedelta(30))
+    # Рабочий справочник живёт в БД: выгрузите его из админки («Выгрузить norms.json»).
+    parser.add_argument("--norms", type=Path, default=NORMS, help="файл справочника")
     args = parser.parse_args()
     token = os.environ.get("GARANT_TOKEN")
     if not token:
         print("Нужен GARANT_TOKEN — его выдаёт обслуживающая организация ГАРАНТ.", file=sys.stderr)
         return 2
-    norms = json.loads(NORMS.read_text(encoding="utf-8"))["norms"]
+    norms = json.loads(args.norms.read_text(encoding="utf-8"))["norms"]
     base_url = os.environ.get("GARANT_API_URL", "https://api.garant.ru")
     try:
         with make_client(base_url, token) as api:

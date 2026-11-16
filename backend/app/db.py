@@ -46,6 +46,22 @@ class Norm(Base):
     data: Mapped[dict] = mapped_column(JSON)
 
 
+class NormChange(Base):
+    """Журнал правок справочника: кто, когда и что изменил. Записи только добавляются."""
+
+    __tablename__ = "norm_changes"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    norm_id: Mapped[str] = mapped_column(String(64), index=True)
+    # Логин, а не ссылка на users: история не должна пропадать вместе с учётной записью.
+    changed_by: Mapped[str] = mapped_column(String(64))
+    changed_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
+    )
+    before: Mapped[dict] = mapped_column(JSON)
+    after: Mapped[dict] = mapped_column(JSON)
+
+
 def get_db() -> Iterator[Session]:
     with SessionLocal() as session:
         yield session

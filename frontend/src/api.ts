@@ -29,6 +29,8 @@ export type Norm = {
   replaced_by?: string | null;
   facts_count: number;
   verified: boolean;
+  updated_by?: string | null;
+  updated_at?: string | null;
 };
 
 export type NormUpdate = { norm_id: string; date: string; name: string; url: string };

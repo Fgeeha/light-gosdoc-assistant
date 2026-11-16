@@ -1,8 +1,9 @@
 """Справочник актов: источник для проверки, с правкой из админки.
 
-База — backend/app/data/norms.json (снимок в git). При старте записи переносятся в таблицу
-`norms`, если она пуста; правки администратора идут в БД. Проверка читает объединённый список
-из БД, с откатом на файл для скриптов и тестов, запускаемых без поднятого приложения.
+База — backend/app/data/norms.json (снимок в git), рабочая копия — таблица `norms`.
+При старте файл сливается с БД (seed): новые записи добавляются, записи без правок из админки
+обновляются, правки юриста (поле updated_by) не трогаются. Проверка читает БД; скрипты и бенч,
+запущенные без приложения, — файл.
 
 ponytail: кэш в памяти процесса; при нескольких воркерах правку увидят после refresh/рестарта.
 """
@@ -61,13 +62,26 @@ def refresh() -> None:
 
 
 def seed() -> None:
-    """Перенести снимок из norms.json в БД, если таблица пуста."""
+    """Слить снимок norms.json с БД, не затирая правки из админки."""
     global _db_required
     _db_required = True
+    added = updated = 0
     with SessionLocal() as s:
-        if s.scalar(select(Norm).limit(1)) is not None:
-            return
+        rows = {r.norm_id: r for r in s.scalars(select(Norm))}
         for n in _from_file():
-            s.add(Norm(norm_id=n["id"], data=n))
+            row = rows.get(n["id"])
+            if row is None:
+                s.add(Norm(norm_id=n["id"], data=n))
+                added += 1
+            elif "updated_by" not in row.data and row.data != n:
+                row.data = n  # запись не правили в админке — источник истины файл
+                updated += 1
         s.commit()
+    if added or updated:
+        logger.info("Справочник из norms.json: добавлено %d, обновлено %d", added, updated)
     refresh()
+
+
+def export() -> list[dict]:
+    """Справочник в формате norms.json — без служебных полей вроде скомпилированных регулярок."""
+    return [{k: v for k, v in n.items() if not k.startswith("_")} for n in load_norms()]

@@ -38,7 +38,8 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     # Порт бэкенда наружу не публикуется: uvicorn доверяет X-Forwarded-For от любого адреса
-    # (--forwarded-allow-ips "*"), что безопасно, только пока до него доходит лишь nginx.
+    # (--forwarded-allow-ips "*"). Это безопасно, пока до него доходит лишь nginx, а nginx
+    # перезаписывает заголовок настоящим адресом клиента (proxy-backend.inc).
     <<: *hardening
     cap_drop: [ALL]
     read_only: true

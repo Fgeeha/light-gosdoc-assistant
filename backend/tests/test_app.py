@@ -491,3 +491,26 @@ def test_admin_changing_own_password_stays_logged_in(admin):
     r = admin.patch(f"/api/admin/users/{me['id']}", json={"password": "admin-password"})
     assert r.status_code == 200
     assert admin.get("/api/auth/me").status_code == 200
+
+
+def test_extract_docx_keeps_tables_in_order():
+    import io
+
+    from docx import Document
+
+    doc = Document()
+    doc.add_paragraph("До таблицы")
+    table = doc.add_table(rows=1, cols=3)
+    table.rows[0].cells[0].text = "Исх. №"
+    table.rows[0].cells[1].merge(table.rows[0].cells[2]).text = "12-34"
+    doc.add_paragraph("После таблицы")
+    buf = io.BytesIO()
+    doc.save(buf)
+    assert (
+        files.extract_text("a.docx", buf.getvalue()) == "До таблицы\nИсх. №\t12-34\nПосле таблицы"
+    )
+
+
+def test_extract_reports_bad_encoding():
+    with pytest.raises(ValueError, match="кодировку"):
+        files.extract_text("a.txt", bytes([0x98]) * 4)

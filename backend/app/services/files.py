@@ -6,6 +6,8 @@ import zipfile
 
 from docx import Document
 from docx.shared import Pt
+from docx.table import Table
+from docx.text.paragraph import Paragraph
 from pypdf import PdfReader
 
 MAX_BYTES = 10 * 1024 * 1024
@@ -32,8 +34,7 @@ def _extract(filename: str, data: bytes) -> str:
         with zipfile.ZipFile(io.BytesIO(data)) as z:
             if sum(i.file_size for i in z.infolist()) > MAX_UNPACKED_BYTES:
                 raise ValueError("Файл .docx слишком большой после распаковки")
-        doc = Document(io.BytesIO(data))
-        return "\n".join(p.text for p in doc.paragraphs).strip()
+        return _docx_text(Document(io.BytesIO(data)))
     if name.endswith(".pdf"):
         reader = PdfReader(io.BytesIO(data))
         if len(reader.pages) > MAX_PDF_PAGES:
@@ -45,7 +46,25 @@ def _extract(filename: str, data: bytes) -> str:
                 return data.decode(enc).strip()
             except UnicodeDecodeError:
                 continue
-    raise ValueError("Поддерживаются файлы .docx, .pdf, .txt, .csv")
+        raise ValueError("Не удалось определить кодировку текста — сохраните файл в UTF-8")
+    raise ValueError("Поддерживаются файлы .docx, .pdf, .txt, .md, .csv, .tsv")
+
+
+def _docx_text(doc) -> str:
+    """Абзацы и таблицы в порядке документа: реквизиты служебных документов часто в таблицах."""
+    lines = []
+    for el in doc.element.body.iterchildren():
+        if el.tag.endswith("}p"):
+            lines.append(Paragraph(el, doc).text)
+        elif el.tag.endswith("}tbl"):
+            for row in Table(el, doc).rows:
+                cells, seen = [], set()
+                for cell in row.cells:
+                    if id(cell._tc) not in seen:  # объединённая ячейка повторяется в каждой колонке
+                        seen.add(id(cell._tc))
+                        cells.append(cell.text.strip())
+                lines.append("\t".join(cells))
+    return "\n".join(lines).strip()
 
 
 def to_docx(text: str) -> bytes:

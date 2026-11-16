@@ -86,7 +86,7 @@ export function UploadButton({ onText }: { onText: (text: string) => void }) {
       <input
         ref={input}
         type="file"
-        accept=".docx,.pdf,.txt"
+        accept=".docx,.pdf,.txt,.md,.csv,.tsv"
         className="hidden"
         onChange={async (e) => {
           const file = e.target.files?.[0];

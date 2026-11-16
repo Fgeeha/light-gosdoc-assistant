@@ -146,6 +146,12 @@ def test_parse_table_rejects_ambiguous_headers():
         tables.parse_table("a;b\n1;2;3")
 
 
+def test_parse_table_malformed_csv_is_value_error():
+    # Незакрытая кавычка тянет поле за лимит csv: должна быть 422, а не 500.
+    with pytest.raises(ValueError, match="Не удалось разобрать"):
+        tables.parse_table('a;b\n"' + "x" * 200_000 + ";1")
+
+
 def test_docx_strips_control_chars():
     assert files.to_docx("стр\x00ока\x07")
 

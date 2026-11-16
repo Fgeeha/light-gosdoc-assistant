@@ -35,10 +35,14 @@ def parse_table(text: str) -> tuple[list[str], list[dict]]:
     else:
         dialect_args = {}
     reader = csv.reader(io.StringIO(text), dialect, **dialect_args)
-    header = [h.strip() for h in next(reader)]
+    try:
+        header = [h.strip() for h in next(reader)]
+        raw = [r for r in reader if any(c.strip() for c in r)]
+    except csv.Error as e:
+        # Незакрытая кавычка, NUL-байт, слишком длинное поле.
+        raise ValueError(f"Не удалось разобрать таблицу: {e}") from e
     if not all(header) or len(set(header)) != len(header):
         raise ValueError("Заголовки колонок должны быть непустыми и не повторяться")
-    raw = [r for r in reader if any(c.strip() for c in r)]
     if any(len(r) > len(header) for r in raw):
         raise ValueError("В некоторых строках больше значений, чем колонок в заголовке")
     rows = [dict(zip(header, (c.strip() for c in r), strict=False)) for r in raw]

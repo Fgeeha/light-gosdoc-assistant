@@ -73,13 +73,6 @@ class NormPatch(BaseModel):
     verified: bool = True
 
 
-class Update(BaseModel):
-    norm_id: str
-    date: str
-    name: str
-    url: str
-
-
 @router.get("", response_model=list[NormOut])
 def list_norms(_: AdminUser) -> list[NormOut]:
     return [_to_out(n) for n in load_norms()]
@@ -96,7 +89,7 @@ def update_norm(norm_id: str, body: NormPatch, admin: AdminUser, db: DB) -> Norm
     if any(t not in titles for t in replacements(changes)):
         # По title подтягиваются нормы нового акта (normcheck.find_references).
         raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
             "Замена должна дословно совпадать с наименованием акта из справочника",
         )
     for key in ("status", "since", "replaced_by", "facts"):
@@ -138,7 +131,7 @@ def norm_history(norm_id: str, _: AdminUser, db: DB) -> list[NormChange]:
     )
 
 
-@router.get("/updates", response_model=list[Update])
+@router.get("/updates", response_model=list[sources.Change])
 def check_updates(_: AdminUser, days: int = Query(30, ge=1, le=365)) -> list[sources.Change]:
     """Публикации за последние `days` дней, затрагивающие отслеживаемые акты (pravo.gov.ru)."""
     since = date.today() - timedelta(days)

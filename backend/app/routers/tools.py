@@ -103,7 +103,7 @@ def table(body: TableIn, _: CurrentUser) -> StreamingResponse:
     try:
         header, rows = tables.parse_table(body.source)
     except ValueError as e:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, str(e)) from e
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(e)) from e
     columns = [c.strip() for c in body.columns if c.strip()]
     parts = tables.chunks(rows)
 
@@ -126,12 +126,12 @@ async def extract(file: UploadFile, _: CurrentUser) -> dict:
         # Разбор docx/pdf синхронный и тяжёлый — вне цикла событий, чтобы не вставали потоки.
         return {"text": await run_in_threadpool(files.extract_text, file.filename or "", data)}
     except ValueError as e:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, str(e)) from e
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(e)) from e
     except Exception as e:
         # Парсеры docx/pdf бросают разнородные исключения на повреждённых файлах.
         logger.warning("Не удалось прочитать файл %r: %r", file.filename, e)
         raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY, "Не удалось прочитать файл"
+            status.HTTP_422_UNPROCESSABLE_CONTENT, "Не удалось прочитать файл"
         ) from e
 
 

@@ -5,13 +5,10 @@
 """
 
 import re
-from pathlib import Path
 from typing import Literal, TypedDict
 
 from app.llm import Message
-from app.services.norms_store import load_norms  # re-export: справочник теперь в norms_store
-
-DATA = Path(__file__).resolve().parent.parent / "data"
+from app.services.norms_store import DATA, load_norms  # re-export: справочник в norms_store
 
 __all__ = [
     "DATA",

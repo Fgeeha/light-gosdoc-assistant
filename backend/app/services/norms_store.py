@@ -24,8 +24,8 @@ logger = logging.getLogger(__name__)
 # Выставляет seed() при старте приложения: дальше справочник берётся только из БД, иначе
 # сбой БД незаметно подменил бы правки юриста снимком из образа.
 _db_required = False
-# Служебные поля правки из админки: живут только в БД и в norms.json не выгружаются.
-ADMIN_FIELDS = ("updated_by", "updated_at", "edited_fields")
+# Служебные поля правки из админки и автосверки: живут только в БД и в norms.json не выгружаются.
+ADMIN_FIELDS = ("updated_by", "updated_at", "edited_fields", "synced_fields", "sync_note")
 
 
 def _compile(norms: list[dict]) -> list[dict]:
@@ -63,6 +63,30 @@ def refresh() -> None:
     load_norms.cache_clear()
 
 
+def save(records: list[dict], before: list[dict]) -> None:
+    """Записать результат автосверки: только поля, изменившиеся относительно снимка before.
+
+    Изменения накладываются на текущую строку: правка юриста, сделанная, пока шла сверка,
+    не откатывается (кроме того же поля той же записи — тогда выигрывает сверка). Изменённые
+    поля помечаются в synced_fields, чтобы seed() при следующем старте не вернул их из файла.
+    Записи, которых не было в before (новые акты-замены), добавляются.
+    """
+    old = {n["id"]: n for n in before}
+    with SessionLocal() as s:
+        for n in records:
+            delta = {k: v for k, v in n.items() if old.get(n["id"], {}).get(k) != v}
+            row = s.get(Norm, n["id"])
+            if not delta:
+                continue
+            if row is None:
+                s.add(Norm(norm_id=n["id"], data=n))
+                continue
+            synced = set(row.data.get("synced_fields") or []) | (set(delta) - {"sync_note"})
+            row.data = {**row.data, **delta, "synced_fields": sorted(synced)}
+        s.commit()
+    refresh()
+
+
 def seed() -> None:
     """Слить снимок norms.json с БД, не затирая правки из админки."""
     global _db_required
@@ -85,9 +109,9 @@ def seed() -> None:
 
 
 def _merge(from_file: dict, in_db: dict) -> dict:
-    """Запись из файла, но поля, которые правил юрист, — из БД (иначе правка потеряется)."""
+    """Запись из файла, но поля, которые правил юрист или автосверка, — из БД."""
     merged = dict(from_file)
-    for key in in_db.get("edited_fields") or []:
+    for key in {*(in_db.get("edited_fields") or []), *(in_db.get("synced_fields") or [])}:
         if key in in_db:
             merged[key] = in_db[key]
         else:

@@ -32,6 +32,14 @@ export type Norm = {
   verified: boolean;
   updated_by?: string | null;
   updated_at?: string | null;
+  sync_note?: string | null;
+  ips_nd?: string | null;
+};
+
+export type SyncReport = {
+  checked: number;
+  changed: { norm_id: string; note: string }[];
+  unchecked: string[];
 };
 
 export type NormUpdate = { norm_id: string; date: string; name: string; url: string };

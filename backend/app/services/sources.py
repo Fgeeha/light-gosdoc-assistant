@@ -19,8 +19,8 @@ from app.services.normcheck import load_norms
 PRAVO_BASE_URL = "http://publication.pravo.gov.ru"
 # Блоки публикации, где выходят изменения федеральных актов (…/api/PublicBlocks — весь список).
 DEFAULT_BLOCKS = ("president", "government", "federal_authorities")
-PAGE_SIZE = 30  # единственное допустимое значение PageSize у API
-MAX_PAGES = 400  # страховка от бесконечного листания (12 000 документов на блок)
+PAGE_SIZE = 200  # максимум API (допустимы 10, 30, 100, 200)
+MAX_PAGES = 50  # страховка от бесконечного листания (10 000 документов на блок)
 # Документ интересен, только если это изменение/отмена, а не первичная публикация акта.
 _CHANGE_RE = re.compile(r"внесени|утратив|призна|отмен|прекращен", re.IGNORECASE)
 
@@ -41,7 +41,8 @@ def fetch_pravo_changes(
 ) -> list[Change]:
     """Опубликованные с даты since документы, чьи названия ссылаются на отслеживаемые акты.
 
-    Фильтра по дате у API нет, поэтому документы листаются от новых к старым до даты since.
+    Фильтр PublishDateFrom принимает только ДД.ММ.ГГГГ (ISO-дату API молча игнорирует).
+    Остановка по дате при листании оставлена как страховка на случай, если фильтр перестанет работать.
     deadline — момент по time.monotonic(), после которого обход прерывается TimeoutError.
     """
     norms = norms if norms is not None else load_norms()
@@ -53,7 +54,12 @@ def fetch_pravo_changes(
                 raise TimeoutError("Портал отвечает слишком долго")
             r = client.get(
                 "/api/Documents",
-                params={"block": block, "PageSize": PAGE_SIZE, "Index": index},
+                params={
+                    "block": block,
+                    "PageSize": PAGE_SIZE,
+                    "Index": index,
+                    "PublishDateFrom": since.strftime("%d.%m.%Y"),
+                },
             )
             r.raise_for_status()
             items = r.json().get("items", [])

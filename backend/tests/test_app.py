@@ -84,12 +84,33 @@ def test_find_references_on_examples():
 
 
 def test_find_references_does_not_confuse_numbers():
-    found = normcheck.find_references("согласно 152-ФЗ и 124-ФЗ, ГОСТ Р 7.0.97-2016")
+    found = normcheck.find_references(
+        "согласно 152-ФЗ и 124-ФЗ, ГОСТ Р 7.0.97-2016, ГОСТ Р 7.0.5-2008"
+    )
     assert [(f["norm_id"], f["status"]) for f in found] == [
         ("fz-152", "active"),
         (None, "unknown"),
+        ("gost-7.0.97-2016", "active"),
         (None, "unknown"),
     ]
+
+
+# Замена — два акта; формат списка в replaced_by ещё не согласован (plan/2026-11-16-audit.md, B2).
+_REPLACED_BY_PENDING = {"sanpin-1340-03"}
+
+
+def test_replaced_by_matches_a_title():
+    # Иначе нормы нового акта молча не попадают в справку для модели.
+    norms = normcheck.load_norms()
+    titles = {n["title"] for n in norms}
+    broken = [
+        n["id"]
+        for n in norms
+        if n.get("replaced_by")
+        and n["replaced_by"] not in titles
+        and n["id"] not in _REPLACED_BY_PENDING
+    ]
+    assert broken == []
 
 
 def test_brief_without_since_and_replacement_has_no_none():
@@ -276,3 +297,5 @@ def test_admin_norm_edit_persists_and_affects_check(admin):
     # вернуть как было, чтобы не влиять на другие тесты
     admin.patch("/api/admin/norms/fz-152", json={"status": "active", "since": None})
     assert admin.patch("/api/admin/norms/fz-000", json={"status": "active"}).status_code == 404
+    r = admin.patch("/api/admin/norms/fz-152", json={"replaced_by": "Закон о чём-то"})
+    assert r.status_code == 422

@@ -70,6 +70,14 @@ def update_norm(norm_id: str, body: NormPatch, _: AdminUser, db: DB) -> NormOut:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Акт не найден в справочнике")
     data = dict(row.data)
     changes = body.model_dump(exclude_unset=True)
+    if changes.get("replaced_by") and changes["replaced_by"] not in {
+        n["title"] for n in load_norms()
+    }:
+        # По title подтягиваются нормы нового акта (normcheck.find_references).
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            "Замена должна дословно совпадать с наименованием акта из справочника",
+        )
     for key in ("status", "since", "replaced_by", "facts"):
         if key in changes:
             if changes[key] in (None, [], ""):

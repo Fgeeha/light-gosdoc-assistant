@@ -88,6 +88,8 @@ async function stream(
   if (!r.body) throw new ApiError(r.status, "Пустой ответ сервера");
   const reader = r.body.pipeThrough(new TextDecoderStream()).getReader();
   let buf = "";
+  // Сервер всегда завершает поток событием done; без него соединение оборвалось на полпути.
+  let finished = false;
   for (;;) {
     const { value, done } = await reader.read();
     if (done) break;
@@ -102,9 +104,11 @@ async function stream(
         if (line.startsWith("event: ")) event = line.slice(7);
         else if (line.startsWith("data: ")) data += line.slice(6);
       }
+      if (event === "done") finished = true;
       onEvent(event, data ? JSON.parse(data) : null);
     }
   }
+  if (!finished) throw new ApiError(0, "Соединение прервано — результат неполный, повторите запрос");
 }
 
 export function useStream() {

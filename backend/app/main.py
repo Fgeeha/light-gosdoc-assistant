@@ -27,7 +27,8 @@ def bootstrap_admin() -> None:
         pw = s.admin_password
         if len(pw) < 8 or len(pw.encode()) > MAX_PASSWORD_BYTES:
             logger.error(
-                "ADMIN_PASSWORD: нужно от 8 символов и не больше 72 байт (кириллица — 2 байта)"
+                "ADMIN_PASSWORD: нужно от 8 символов и не больше %d байт (кириллица — 2 байта)",
+                MAX_PASSWORD_BYTES,
             )
             return
         db.add(

@@ -19,7 +19,7 @@ from app.audit import audit
 from app.db import Norm, NormChange
 from app.security import DB, AdminUser
 from app.services import norms_store, sources
-from app.services.normcheck import load_norms, replacements
+from app.services.normcheck import load_norms, replaced_by_text, replacements
 
 router = APIRouter(prefix="/api/admin/norms", tags=["admin"])
 UPDATES_MAX_SECONDS = 60
@@ -50,7 +50,7 @@ def _to_out(n: dict) -> NormOut:
         title=n["title"],
         status=n["status"],
         since=n.get("since"),
-        replaced_by="; ".join(replacements(n)) or None,
+        replaced_by=replaced_by_text(n),
         facts_count=len(n.get("facts") or []),
         # Записи без явного флага считаются проверенными (исходные акты справочника).
         verified=n.get("verified", True),
@@ -103,6 +103,9 @@ def update_norm(norm_id: str, body: NormPatch, admin: AdminUser, db: DB) -> Norm
     # Отметка правки: seed() не перезапишет такую запись из norms.json.
     data["updated_by"] = admin.username
     data["updated_at"] = datetime.now(UTC).isoformat(timespec="seconds")
+    # Какие поля решил юрист: seed() не перезапишет их из norms.json, остальные — обновит.
+    edited = set(data.get("edited_fields") or []) | (set(changes) - {"verified"}) | {"verified"}
+    data["edited_fields"] = sorted(edited)
     db.add(NormChange(norm_id=norm_id, changed_by=admin.username, before=row.data, after=data))
     row.data = data
     db.commit()

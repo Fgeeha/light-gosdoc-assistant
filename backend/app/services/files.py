@@ -5,6 +5,7 @@ import re
 import zipfile
 
 from docx import Document
+from docx.document import Document as DocxDocument
 from docx.shared import Pt
 from docx.table import Table
 from docx.text.paragraph import Paragraph
@@ -50,7 +51,7 @@ def _extract(filename: str, data: bytes) -> str:
     raise ValueError("Поддерживаются файлы .docx, .pdf, .txt, .md, .csv, .tsv")
 
 
-def _docx_text(doc) -> str:
+def _docx_text(doc: DocxDocument) -> str:
     """Абзацы и таблицы в порядке документа: реквизиты служебных документов часто в таблицах."""
     lines = []
     for el in doc.element.body.iterchildren():

@@ -1,8 +1,8 @@
 """Справочник актов: источник для проверки, с правкой из админки.
 
 База — backend/app/data/norms.json (снимок в git), рабочая копия — таблица `norms`.
-При старте файл сливается с БД (seed): новые записи добавляются, записи без правок из админки
-обновляются, правки юриста (поле updated_by) не трогаются. Проверка читает БД; скрипты и бенч,
+При старте файл сливается с БД (seed): новые записи добавляются, остальные обновляются из
+файла, кроме полей, которые юрист правил в админке (edited_fields). Проверка читает БД; скрипты и бенч,
 запущенные без приложения, — файл.
 
 ponytail: кэш в памяти процесса; при нескольких воркерах правку увидят после refresh/рестарта.
@@ -24,6 +24,8 @@ logger = logging.getLogger(__name__)
 # Выставляет seed() при старте приложения: дальше справочник берётся только из БД, иначе
 # сбой БД незаметно подменил бы правки юриста снимком из образа.
 _db_required = False
+# Служебные поля правки из админки: живут только в БД и в norms.json не выгружаются.
+ADMIN_FIELDS = ("updated_by", "updated_at", "edited_fields")
 
 
 def _compile(norms: list[dict]) -> list[dict]:
@@ -73,8 +75,8 @@ def seed() -> None:
             if row is None:
                 s.add(Norm(norm_id=n["id"], data=n))
                 added += 1
-            elif "updated_by" not in row.data and row.data != n:
-                row.data = n  # запись не правили в админке — источник истины файл
+            elif (merged := _merge(n, row.data)) != row.data:
+                row.data = merged
                 updated += 1
         s.commit()
     if added or updated:
@@ -82,6 +84,25 @@ def seed() -> None:
     refresh()
 
 
+def _merge(from_file: dict, in_db: dict) -> dict:
+    """Запись из файла, но поля, которые правил юрист, — из БД (иначе правка потеряется)."""
+    merged = dict(from_file)
+    for key in in_db.get("edited_fields") or []:
+        if key in in_db:
+            merged[key] = in_db[key]
+        else:
+            merged.pop(key, None)  # юрист очистил поле
+    merged |= {k: in_db[k] for k in ADMIN_FIELDS if k in in_db}
+    return merged
+
+
 def export() -> list[dict]:
-    """Справочник в формате norms.json — без служебных полей вроде скомпилированных регулярок."""
-    return [{k: v for k, v in n.items() if not k.startswith("_")} for n in load_norms()]
+    """Справочник в формате norms.json: без регулярок и служебных полей правки.
+
+    Выгрузку коммитят обратно в git — с updated_by/edited_fields она бы навсегда закрепила
+    записи за БД.
+    """
+    return [
+        {k: v for k, v in n.items() if not k.startswith("_") and k not in ADMIN_FIELDS}
+        for n in load_norms()
+    ]

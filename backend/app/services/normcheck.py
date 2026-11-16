@@ -17,6 +17,7 @@ __all__ = [
     "find_references",
     "load_norms",
     "needs_rewrite",
+    "replaced_by_text",
     "replacements",
 ]
 
@@ -50,6 +51,11 @@ def replacements(norm: dict) -> list[str]:
     return [value] if isinstance(value, str) else list(value)
 
 
+def replaced_by_text(norm: dict) -> str | None:
+    """Замены одной строкой — для справки модели и интерфейса."""
+    return "; ".join(replacements(norm)) or None
+
+
 def find_references(text: str) -> list[Finding]:
     """Находки по тексту в порядке появления: известные акты и неизвестные ссылки."""
     findings: list[Finding] = []
@@ -69,7 +75,7 @@ def find_references(text: str) -> list[Finding]:
                 position=matches[0].start(),
                 occurrences=len(matches),
                 since=n.get("since"),
-                replaced_by="; ".join(replacements(n)) or None,
+                replaced_by=replaced_by_text(n),
                 comment=n.get("comment"),
                 # Для отменённого акта — нормы того, что его заменил.
                 facts=n.get("facts")

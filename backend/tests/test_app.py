@@ -447,27 +447,30 @@ def test_norm_edit_is_journaled_and_exported(admin):
     norms = {n["id"]: n for n in exported.json()["norms"]}
     assert norms["fz-149"]["facts"] == ["Тестовая норма."]
     assert not any(k.startswith("_") for n in norms.values() for k in n)
+    # Служебные поля правки не выгружаются: иначе снимок в git закрепил бы записи за БД.
+    assert not {"updated_by", "updated_at", "edited_fields"} & {
+        k for n in norms.values() for k in n
+    }
 
 
-def test_seed_merges_file_without_overwriting_admin_edits(admin):
+def test_seed_merges_file_field_by_field(admin):
     from app.db import Norm, SessionLocal
     from app.services import norms_store
 
-    admin.patch("/api/admin/norms/fz-59", json={"comment": None, "verified": True})
+    file_norms = {n["id"]: n for n in norms_store._from_file()}
+    # Юрист правит только статус fz-59.
+    assert admin.patch("/api/admin/norms/fz-59", json={"status": "repealed"}).status_code == 200
     with SessionLocal() as s:
         s.delete(s.get(Norm, "fz-125"))  # как будто запись появилась в файле позже
         edited = s.get(Norm, "fz-59")
-        edited.data = edited.data | {"status": "repealed"}  # правка юриста
-        untouched = s.get(Norm, "fz-152")
-        untouched.data = {k: v for k, v in untouched.data.items() if k != "updated_by"} | {
-            "status": "repealed"
-        }  # устаревшая копия без правок
+        edited.data = edited.data | {"patterns": ["устаревший шаблон"]}  # файл с тех пор исправлен
         s.commit()
     norms_store.seed()
     by_id = {n["id"]: n for n in norms_store.load_norms()}
     assert "fz-125" in by_id
-    assert by_id["fz-59"]["status"] == "repealed"
-    assert by_id["fz-152"]["status"] == "active"
+    assert by_id["fz-59"]["status"] == "repealed"  # правка юриста сохранена
+    assert by_id["fz-59"]["patterns"] == file_norms["fz-59"]["patterns"]  # исправление файла дошло
+    assert "status" in by_id["fz-59"]["edited_fields"]
     admin.patch("/api/admin/norms/fz-59", json={"status": "active"})
 
 
@@ -561,3 +564,18 @@ def test_endpoint_permissions(admin, anon):
         for method, url in ADMIN_ENDPOINTS:
             kw = {"json": {}} if method in ("post", "patch") else {}
             assert getattr(clerk, method)(url, **kw).status_code == 403, (method, url)
+
+
+def test_login_attempts_are_counted_atomically(monkeypatch):
+    from concurrent.futures import ThreadPoolExecutor
+
+    from app.routers import auth
+
+    with ThreadPoolExecutor(20) as pool:
+        allowed = list(pool.map(lambda _: auth._reserve_attempt("race"), range(20)))
+    assert allowed.count(True) == auth.MAX_FAILURES
+
+    monkeypatch.setattr(auth, "MAX_TRACKED", 3)
+    for name in ("a", "b", "c", "d"):
+        auth._reserve_attempt(name)
+    assert len(auth._failures) == 3 and "race" not in auth._failures

@@ -33,6 +33,9 @@ services:
   frontend:
     image: ${IMAGE_PREFIX:-ghcr.io/fgeeha/light-gosdoc-assistant}-frontend:${TAG:-latest}
     build: ../frontend
+    environment:
+      # Адрес/подсеть внешнего обратного прокси, которому nginx доверяет X-Forwarded-For.
+      TRUSTED_PROXY: ${TRUSTED_PROXY:-127.0.0.1}
     ports:
       - "${HTTP_PORT:-8080}:8080"
     depends_on:

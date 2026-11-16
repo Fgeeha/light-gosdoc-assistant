@@ -35,9 +35,12 @@ Tests run against SQLite with env set in `backend/tests/conftest.py`; the LLM is
 
 ## Architecture
 
-**Request flow:** browser → nginx (`frontend/nginx.conf`: SPA, `/api` proxy with buffering off for
-SSE, login rate limit, security headers repeated per `location` because `add_header` doesn't
-inherit) → FastAPI `backend/app` → Postgres (users only) and the LLM server.
+**Request flow:** browser → nginx (`frontend/nginx.conf.template`, rendered by the image's envsubst:
+SPA, `/api` proxy with buffering off for SSE, login rate limit by real client IP via
+`set_real_ip_from ${TRUSTED_PROXY}`, `security-headers.inc` included in every `location` because
+`add_header` doesn't inherit) → FastAPI `backend/app` → Postgres (users, norms, `norm_changes`
+journal) and the LLM server. The app also locks an account after 5 failed logins in 15 minutes
+(in-memory, per process) and logs security events to the `gosdoc.audit` logger.
 
 **Auth:** JWT in an httpOnly `SameSite=Strict` cookie (`security.py`). The token carries
 `User.token_version`; bumping it (logout, password change) revokes all sessions. Passwords are

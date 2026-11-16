@@ -1,4 +1,6 @@
-# Перебор паролей: не более 10 попыток входа в минуту с одного адреса.
+# Шаблон: при старте контейнера ${TRUSTED_PROXY} подставляется из окружения (envsubst образа nginx).
+# Перебор паролей: не более 10 попыток входа в минуту с одного адреса
+# (плюс блокировка учётной записи в самом приложении).
 limit_req_zone $binary_remote_addr zone=login:10m rate=10r/m;
 
 server {
@@ -6,17 +8,23 @@ server {
     server_name _;
     root /usr/share/nginx/html;
     client_max_body_size 12m;
+    server_tokens off;
 
-    # add_header в location отменяет наследование, поэтому заголовки подключаются в каждом блоке.
-    set $csp "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-ancestors 'none'";
+    # Настоящий адрес клиента за внешним обратным прокси — иначе лимит входа общий на всех.
+    # TRUSTED_PROXY — адрес или подсеть прокси; заголовку от остальных не доверяем.
+    set_real_ip_from ${TRUSTED_PROXY};
+    real_ip_header X-Forwarded-For;
+    real_ip_recursive on;
 
     location = /api/auth/login {
         limit_req zone=login burst=5 nodelay;
         limit_req_status 429;
         proxy_pass http://backend:8000;
+        proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+        include /etc/nginx/security-headers.inc;
     }
 
     location /api/ {
@@ -28,22 +36,18 @@ server {
         # Потоковые ответы модели (SSE) — без буферизации и с долгим таймаутом.
         proxy_buffering off;
         proxy_read_timeout 900s;
-        add_header X-Content-Type-Options nosniff always;
-        add_header X-Frame-Options DENY always;
+        include /etc/nginx/security-headers.inc;
     }
 
     location /assets/ {
         expires 1y;
         add_header Cache-Control "public, immutable";
-        add_header X-Content-Type-Options nosniff always;
+        include /etc/nginx/security-headers.inc;
     }
 
     location / {
         try_files $uri /index.html;
         add_header Cache-Control "no-cache";
-        add_header X-Content-Type-Options nosniff always;
-        add_header X-Frame-Options DENY always;
-        add_header Referrer-Policy same-origin always;
-        add_header Content-Security-Policy $csp always;
+        include /etc/nginx/security-headers.inc;
     }
 }
